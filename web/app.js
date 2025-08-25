@@ -627,6 +627,28 @@ class FPLAnalyzer {
      */
     async processLeague(config) {
         try {
+            this.ui.updateProgress(5, 'Generating fresh data...');
+            
+            // Try to generate fresh cache first
+            try {
+                const response = await fetch('/api/generate-cache', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        leagueId: config.league.id, 
+                        gameweek: config.league.gameweek 
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log('✅ Fresh cache generated successfully');
+                    // Wait a bit for file to be written
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            } catch (error) {
+                console.log('⚠️ Could not generate fresh cache, will try existing cache or fallback to API');
+            }
+            
             this.ui.updateProgress(10, 'Loading master data...');
             
             // Load master data first (needed for Arsenal players)
@@ -634,7 +656,7 @@ class FPLAnalyzer {
             
             this.ui.updateProgress(15, 'Checking for cached data...');
             
-            // Check for cached JSON data first
+            // Check for cached JSON data (either fresh or existing)
             const cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
             if (cachedData) {
                 this.ui.updateProgress(30, 'Processing cached data...');

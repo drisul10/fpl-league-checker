@@ -310,6 +310,24 @@ app.get('/api/fpl/*', validateFPLPath, (req, res) => {
     proxyReq.end();
 });
 
+// Simple endpoint to generate cache by running fpl-json-export.js
+app.post('/api/generate-cache', (req, res) => {
+    const { leagueId, gameweek } = req.body;
+    
+    const { spawn } = require('child_process');
+    const child = spawn('node', ['fpl-json-export.js', leagueId.toString(), gameweek.toString()], {
+        cwd: __dirname
+    });
+    
+    child.on('close', (code) => {
+        if (code === 0) {
+            res.json({ success: true });
+        } else {
+            res.json({ success: false });
+        }
+    });
+});
+
 app.post('/api/export', validateLeagueId, (req, res) => {
     const { leagueId, rules } = req.body;
     
