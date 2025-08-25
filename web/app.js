@@ -7,16 +7,14 @@ class FPLAnalyzer {
         this.isProcessing = false;
         this.currentGameweek = null;
         
-        // Cache for team picks data
-        this.teamCache = new Map(); // key: "entryId-gameweek", value: {data, timestamp}
-        this.cacheExpiry = 60 * 60 * 1000; // 1 hour in milliseconds
+        this.teamCache = new Map();
+        this.cacheExpiry = 60 * 60 * 1000;
         
-        // Failed request tracking for GUARANTEED completion
         this.failedTeams = [];
-        this.baseRetryDelay = 5000; // Base: 5 seconds
-        this.currentRetryDelay = 5000; // Current delay (increases exponentially)
-        this.shouldPauseImmediately = false; // Flag for immediate pause on 429
-        this.pauseRound = 0; // Track pause rounds for exponential backoff
+        this.baseRetryDelay = 5000;
+        this.currentRetryDelay = 5000;
+        this.shouldPauseImmediately = false;
+        this.pauseRound = 0;
         
         this.ui = new UIController();
         this.init();
@@ -25,7 +23,6 @@ class FPLAnalyzer {
     init() {
         this.bindEvents();
         this.loadCurrentGameweek();
-        this.initMobileLayout();
     }
     
     bindEvents() {
@@ -34,76 +31,36 @@ class FPLAnalyzer {
             this.analyzeLeague();
         });
         
-        document.getElementById('sidebarToggle').addEventListener('click', () => {
-            const content = document.getElementById('sidebarContent');
-            const arrow = document.querySelector('.toggle-arrow');
-            content.classList.toggle('show');
-            if (content.classList.contains('show')) {
-                arrow.style.transform = 'rotate(180deg)';
-            } else {
-                arrow.style.transform = 'rotate(0deg)';
-            }
-            this.updateMobileLayout();
-            setTimeout(() => this.adjustMobileLayout(), 400);
-        });
-        window.addEventListener('resize', () => {
-            this.adjustMobileLayout();
-        });
     }
     
-    initMobileLayout() {
-        if (window.innerWidth <= 1023) {
-            const hasResults = document.getElementById('resultsSection').style.display === 'block';
-            if (!hasResults) {
-                const content = document.getElementById('sidebarContent');
-                const arrow = document.querySelector('.toggle-arrow');
-                content.classList.add('show');
-                if (arrow) arrow.style.transform = 'rotate(180deg)';
-            }
-        }
-        this.adjustMobileLayout();
-    }
-    
-    adjustMobileLayout() {
-        if (window.innerWidth <= 767) {
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                const sidebarHeight = sidebar.offsetHeight;
-                document.documentElement.style.setProperty('--mobile-header-height', `${sidebarHeight}px`);
-            }
-        }
-    }
-    
-    updateMobileLayout() {
-        if (window.innerWidth <= 1023) {
-            const sidebar = document.querySelector('.sidebar');
-            const sidebarContent = document.getElementById('sidebarContent');
-            
-            if (sidebar && sidebarContent) {
-                let expectedHeight;
-                if (sidebarContent.classList.contains('show')) {
-                    const sidebarClone = sidebar.cloneNode(true);
-                    sidebarClone.style.position = 'absolute';
-                    sidebarClone.style.visibility = 'hidden';
-                    sidebarClone.style.height = 'auto';
-                    sidebarClone.querySelector('.sidebar-content').style.maxHeight = 'none';
-                    sidebarClone.querySelector('.sidebar-content').style.opacity = '1';
-                    document.body.appendChild(sidebarClone);
-                    expectedHeight = sidebarClone.offsetHeight;
-                    document.body.removeChild(sidebarClone);
-                } else {
-                    const sidebarClone = sidebar.cloneNode(true);
-                    sidebarClone.style.position = 'absolute';
-                    sidebarClone.style.visibility = 'hidden';
-                    sidebarClone.querySelector('.sidebar-content').style.maxHeight = '0';
-                    sidebarClone.querySelector('.sidebar-content').style.opacity = '0';
-                    document.body.appendChild(sidebarClone);
-                    expectedHeight = sidebarClone.offsetHeight;
-                    document.body.removeChild(sidebarClone);
+    /**
+     * Populate gameweek dropdown with available gameweeks
+     */
+    populateGameweekDropdown(events, currentGameweek) {
+        const select = document.getElementById('gameweekSelect');
+        select.innerHTML = '';
+        
+        if (events && events.length > 0) {
+            // Add gameweeks from 1 to current gameweek
+            for (let gw = 1; gw <= currentGameweek; gw++) {
+                const option = document.createElement('option');
+                option.value = gw;
+                option.textContent = `Gameweek ${gw}`;
+                
+                // Mark current gameweek as selected
+                if (gw === currentGameweek) {
+                    option.selected = true;
                 }
                 
-                document.documentElement.style.setProperty('--mobile-header-height', `${expectedHeight}px`);
+                select.appendChild(option);
             }
+        } else {
+            // Fallback if no events data
+            const option = document.createElement('option');
+            option.value = currentGameweek || 1;
+            option.textContent = `Gameweek ${currentGameweek || 1}`;
+            option.selected = true;
+            select.appendChild(option);
         }
     }
 
@@ -133,17 +90,13 @@ class FPLAnalyzer {
     async checkForCachedData(leagueId, gameweek) {
         try {
             const filename = `gw${gameweek}-league${leagueId}.json`;
-            console.log(`🔍 Looking for cached data: ${filename}`);
             const response = await fetch(`/out/${filename}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log(`📦 Found cached data: ${filename} with ${data.teams?.length || 0} teams`);
                 return data;
             } else {
-                console.log(`❌ Cache file not accessible: ${response.status}`);
             }
         } catch (error) {
-            console.log(`🌐 No cached data found for league ${leagueId}, gameweek ${gameweek}:`, error.message);
         }
         return null;
     }
@@ -153,11 +106,9 @@ class FPLAnalyzer {
      */
     processCachedData(cachedData, config) {
         if (!cachedData || !cachedData.teams) {
-            console.error('No cached data or teams found');
             return [];
         }
         
-        console.log('Processing cached data with config:', config);
         
         return cachedData.teams.map(team => {
             // Convert cached team data to expected format
@@ -240,7 +191,6 @@ class FPLAnalyzer {
         const cached = this.teamCache.get(key);
         
         if (cached && this.isValidCache(cached.timestamp)) {
-            console.log(`💾 Cache hit for team ${entryId}, GW ${gameweek}`);
             return cached.data;
         }
         
@@ -276,7 +226,6 @@ class FPLAnalyzer {
         const existingFailed = this.failedTeams.find(team => team.entryId === entryId);
         if (!existingFailed) {
             this.failedTeams.push({ entryId, gameweek, config, error: error.message });
-            console.warn(`🚨 IMMEDIATE PAUSE: Team ${entryId} failed (${error.message}), will keep retrying until success`);
         }
         
         // Trigger immediate pause
@@ -309,7 +258,6 @@ class FPLAnalyzer {
             resultsSummary.remove();
         }
         
-        console.log('🧹 Previous results cleared for new analysis');
     }
     
     /**
@@ -321,7 +269,6 @@ class FPLAnalyzer {
         
         // Cap at 40s for fairness, then reset to 5s
         if (this.currentRetryDelay > 40000) {
-            console.log(`⚖️ Fairness reset: Reached 40s limit, resetting to 5s for next attempt`);
             this.currentRetryDelay = this.baseRetryDelay; // Reset to 5s
             this.pauseRound = 1; // Reset round counter
         }
@@ -347,13 +294,11 @@ class FPLAnalyzer {
                 try {
                     const checkResult = await this.checkTeamCompliance(entryId, gameweek, teamConfig);
                     if (checkResult) {
-                        console.log(`✅ Team ${entryId} succeeded on retry!`);
                         // Find the original team data
                         const originalTeam = this.originalTeams?.find(t => t.entry === entryId) || { entry: entryId };
                         return { ...originalTeam, ...checkResult };
                     }
                 } catch (error) {
-                    console.error(`🔄 Team ${entryId} failed again on retry: ${error.message}`);
                 }
                 return null;
             });
@@ -381,7 +326,6 @@ class FPLAnalyzer {
             const failedCount = this.failedTeams.length;
             const nextDelay = this.calculateNextDelay();
             
-            console.log(`🚨 PAUSE: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential doubling)`);
             
             this.ui.updateProgress(50, `⏸️ Pause: Waiting ${nextDelay/1000}s for API cooldown (${completedTeams}/${totalTeams} completed)...`);
             
@@ -399,17 +343,14 @@ class FPLAnalyzer {
             results.push(...retryResults);
             totalRetrySuccesses += succeededCount;
             
-            console.log(`✅ Retry complete: ${succeededCount}/${beforeRetryCount} teams succeeded. ${afterRetryCount} still failing.`);
             
             retryRound++;
             
             // Safety check to prevent infinite loops (though we'll keep trying)
             if (retryRound > 20) {
-                console.warn(`⚠️ 20 retries completed. ${this.failedTeams.length} teams still failing. Continuing...`);
             }
         }
         
-        console.log(`🎉 ALL FAILED TEAMS COMPLETED! Resuming normal processing...`);
         
         // Reset pause delays for next potential failure
         this.currentRetryDelay = this.baseRetryDelay; // Reset to 5s
@@ -437,6 +378,8 @@ class FPLAnalyzer {
                     this.currentGameweek = Math.max(...finishedEvents.map(e => e.id));
                 }
             }
+            
+            this.populateGameweekDropdown(data.events, this.currentGameweek);
         }
         
         this.arsenalPlayers.clear();
@@ -557,7 +500,6 @@ class FPLAnalyzer {
                     return null; // Will be retried later
                 } else {
                     // Non-retryable error (team doesn't exist, etc.)
-                    console.error(`❌ Permanent error for team ${entryId}: ${error.message}`);
                     return null;
                 }
             }
@@ -617,7 +559,6 @@ class FPLAnalyzer {
             };
             
         } catch (error) {
-            console.error(`Error checking team ${entryId}:`, error.message);
             return null;
         }
     }
@@ -663,7 +604,6 @@ class FPLAnalyzer {
                         }
                     }
                 } catch (error) {
-                    console.log('⚠️ Could not generate cache');
                 }
             }
             
@@ -693,7 +633,6 @@ class FPLAnalyzer {
             this.clearExpiredCache();
             
             this.ui.updateProgress(30, `Processing ${teams.length} teams...`);
-            console.log(`📊 Starting with ${this.teamCache.size} cached teams`);
             
             const results = [];
             const batchSize = FPLConfig.api.batchSize;
@@ -748,13 +687,11 @@ class FPLAnalyzer {
             this.ui.updateProgress(100, finalMessage);
             
             // Log final stats
-            console.log(`📊 Final Results: ${totalTeams} successful, ${this.failedTeams.length} failed, Cache: ${this.teamCache.size} teams`);
             
             // Display results
             this.ui.displayResults(results, config, this.leagueName, this.dataUpdatedAt);
             
         } catch (error) {
-            console.error('❌ Error:', error.message);
             this.ui.showError(error.message);
         }
     }
@@ -765,11 +702,9 @@ class FPLAnalyzer {
     async loadCurrentGameweek() {
         try {
             await this.loadMasterData();
-            // Current gameweek is now set in loadMasterData
         } catch (error) {
-            console.error('Failed to load current gameweek:', error);
-            // Default to gameweek 1 if there's an error
             this.currentGameweek = 1;
+            this.populateGameweekDropdown(null, 1);
         }
     }
     
@@ -789,8 +724,6 @@ class FPLAnalyzer {
             if (content && content.classList.contains('show')) {
                 content.classList.remove('show');
                 if (arrow) arrow.style.transform = 'rotate(0deg)';
-                // Update mobile layout after collapsing
-                setTimeout(() => this.updateMobileLayout(), 100);
             }
         }
         
@@ -804,7 +737,6 @@ class FPLAnalyzer {
         try {
             await this.processLeague(formData);
         } catch (error) {
-            console.error('Analysis failed:', error);
             this.ui.showError(error.message);
         } finally {
             this.isProcessing = false;
@@ -872,7 +804,6 @@ class FPLAnalyzer {
             }
             
         } catch (error) {
-            console.error('Export failed:', error);
             this.ui.showError(`Export failed: ${error.message}`);
         } finally {
             this.isProcessing = false;
@@ -892,8 +823,9 @@ class FPLAnalyzer {
             return null;
         }
         
-        if (!this.currentGameweek) {
-            this.ui.showError('Unable to determine current gameweek. Please refresh and try again.');
+        const selectedGameweek = parseInt(document.getElementById('gameweekSelect').value);
+        if (!selectedGameweek || selectedGameweek < 1 || selectedGameweek > 38) {
+            this.ui.showError('Please select a valid gameweek.');
             return null;
         }
         
@@ -917,7 +849,7 @@ class FPLAnalyzer {
         return {
             league: {
                 id: leagueId,
-                gameweek: this.currentGameweek
+                gameweek: selectedGameweek
             },
             arsenal: {
                 playersInStartingXI: {
@@ -970,10 +902,6 @@ class UIController {
         this.elements.progressSection.style.display = 'none';
         this.elements.checkBtn.disabled = false;
         
-        // Recalculate mobile layout when progress disappears
-        if (window.checker && window.checker.updateMobileLayout) {
-            setTimeout(() => window.checker.updateMobileLayout(), 100);
-        }
     }
     
     enableExport() {
@@ -998,11 +926,6 @@ class UIController {
             const arrow = document.querySelector('.toggle-arrow');
             content.classList.add('show');
             if (arrow) arrow.style.transform = 'rotate(180deg)';
-            setTimeout(() => {
-                if (typeof app !== 'undefined' && app.adjustMobileLayout) {
-                    app.adjustMobileLayout();
-                }
-            }, 300);
         }
     }
     
@@ -1036,11 +959,6 @@ class UIController {
             content.classList.remove('show');
             if (arrow) arrow.style.transform = 'rotate(0deg)';
             // Recalculate layout after collapse
-            setTimeout(() => {
-                if (typeof app !== 'undefined' && app.adjustMobileLayout) {
-                    app.adjustMobileLayout();
-                }
-            }, 300);
         }
     }
     

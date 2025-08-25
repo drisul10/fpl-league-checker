@@ -4,38 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO Meta Tags -->
     <title>FPL Rules Checker | Fantasy Premier League Team Compliance Analyzer</title>
     <meta name="description" content="Analyze your Fantasy Premier League team for rule compliance. Check Arsenal player requirements, captain rules, and team composition instantly.">
     <meta name="keywords" content="FPL, Fantasy Premier League, Arsenal, team analyzer, rules checker, football, soccer">
     <meta name="author" content="Andri Sul">
     <meta name="robots" content="index, follow">
     
-    <!-- Open Graph Tags -->
     <meta property="og:title" content="FPL Rules Checker | Fantasy Premier League Team Compliance">
     <meta property="og:description" content="Analyze your Fantasy Premier League team for rule compliance instantly.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://fplchecker.andri.land">
     <meta property="og:image" content="/og-image.png">
     
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:creator" content="@drisul10">
     <meta name="twitter:title" content="FPL Rules Checker">
     <meta name="twitter:description" content="Analyze your Fantasy Premier League team for rule compliance instantly.">
     
-    <!-- Web App Manifest -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ef0107">
     
-    <!-- Performance Optimizations -->
     <link rel="preconnect" href="https://fantasy.premierleague.com" crossorigin>
     <link rel="dns-prefetch" href="https://fantasy.premierleague.com">
     
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -69,15 +62,7 @@
                 </p>
             </section>
             
-            <button class="sidebar-toggle" id="sidebarToggle" 
-                    aria-expanded="false" 
-                    aria-controls="sidebarContent" 
-                    aria-label="Toggle league analysis settings">
-                📊 League Analysis Settings
-                <span class="toggle-arrow" aria-hidden="true">▼</span>
-            </button>
-            
-            <div class="sidebar-content" id="sidebarContent" role="region" aria-label="League analysis form">
+            <div class="sidebar-content" id="sidebarContent" role="region" aria-label="League analysis form" style="display: block;">
                 <form id="fplForm" novalidate aria-label="Fantasy Premier League analysis settings">
                     <fieldset class="form-section" role="group" aria-labelledby="league-settings-heading">
                         <legend><h2 id="league-settings-heading">League Settings</h2></legend>
@@ -94,6 +79,17 @@
                                    pattern="[0-9]{1,9}"
                                    title="Enter a valid league ID between 1 and 999999999">
                             <div id="leagueId-help" class="sr-only">Enter your Fantasy Premier League ID number</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gameweekSelect">Gameweek *</label>
+                            <select id="gameweekSelect" 
+                                    required 
+                                    aria-required="true"
+                                    aria-describedby="gameweek-help">
+                                <option value="">Loading gameweeks...</option>
+                            </select>
+                            <div id="gameweek-help" class="sr-only">Select the gameweek to analyze</div>
                         </div>
                     </fieldset>
 

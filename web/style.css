@@ -17,7 +17,6 @@
     --sidebar-width: 350px;
 }
 
-/* Skip Link for Accessibility */
 .skip-link {
     position: absolute;
     top: -40px;
@@ -40,7 +39,6 @@
     box-sizing: border-box;
 }
 
-/* Screen reader only class */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -53,7 +51,6 @@
     border: 0;
 }
 
-/* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -74,7 +71,6 @@
     background: #999;
 }
 
-/* Firefox Scrollbar */
 * {
     scrollbar-width: thin;
     scrollbar-color: #c0c0c0 #f0f0f0;
@@ -251,7 +247,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Hide default checkbox */
 .rule-checkbox input[type="checkbox"] {
     position: absolute;
     opacity: 0;
@@ -260,7 +255,6 @@ body {
     width: 0;
 }
 
-/* Custom checkbox */
 .rule-checkbox {
     position: relative;
     display: flex;
@@ -292,7 +286,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Checkmark */
 .rule-checkbox label::after {
     content: '';
     position: absolute;
@@ -307,7 +300,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* When checked */
 .rule-checkbox input[type="checkbox"]:checked + label::before {
     background-color: var(--primary-red);
     border-color: var(--primary-red);
@@ -317,7 +309,6 @@ body {
     opacity: 1;
 }
 
-/* Hover effect */
 .rule-checkbox:hover label::before {
     border-color: var(--primary-red);
     box-shadow: 0 0 0 2px rgba(220, 38, 127, 0.1);
@@ -768,7 +759,6 @@ body {
     display: none;
 }
 
-/* Row styling based on compliance */
 .results-table tbody tr.compliant {
     border-left: 3px solid var(--success);
 }
@@ -777,7 +767,6 @@ body {
     border-left: 3px solid var(--error);
 }
 
-/* Badges */
 .badge {
     display: inline-block;
     padding: 3px 7px;
@@ -807,7 +796,6 @@ body {
     color: white;
 }
 
-/* Icon badges for checkmarks and X marks */
 .icon-badge {
     display: inline-flex;
     align-items: center;
@@ -831,7 +819,6 @@ body {
     background-color: #EF4444;
 }
 
-/* Mobile optimizations for icon badges */
 @media (max-width: 767px) {
     .icon-badge {
         width: 18px;
@@ -865,7 +852,6 @@ body {
     color: #c33;
 }
 
-/* Empty Results Message */
 .empty-results-message {
     padding: 60px 20px;
     text-align: center;
@@ -905,43 +891,23 @@ body {
         height: auto;
         max-height: none;
         overflow-y: visible;
+        padding: 15px;
     }
     
     .main-content {
         margin-left: 0;
         padding: 15px;
-        transition: padding 0.4s ease-in-out, transform 0.4s ease-in-out;
     }
     
     .app-layout {
         flex-direction: column;
     }
     
-    .sidebar-toggle {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #8b1538;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: var(--border-radius-sm);
-        font-weight: 600;
-        cursor: pointer;
-        margin-bottom: 15px;
-        width: 100%;
-    }
-    
     .sidebar-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-in-out, opacity 0.3s ease;
-        opacity: 0;
-    }
-    
-    .sidebar-content.show {
-        max-height: 1000px; /* Large enough to accommodate content */
+        display: block;
+        max-height: none;
         opacity: 1;
+        overflow: visible;
     }
     
     .table-container {
@@ -949,11 +915,6 @@ body {
     }
 }
 
-/* Arrow styles for mobile/tablet toggle */
-.toggle-arrow {
-    font-size: 0.8rem;
-    transition: transform 0.4s ease-in-out;
-}
 
 /* Mobile Layout (< 768px) */
 @media (max-width: 767px) {
@@ -963,21 +924,16 @@ body {
     
     .app-layout {
         flex-direction: column;
-        height: 100vh;
     }
     
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
+        position: relative;
         width: 100%;
         height: auto;
-        max-height: 80vh; /* Limit to 80% of viewport height */
-        overflow-y: auto; /* Enable scrolling */
+        max-height: none;
+        overflow-y: visible;
         padding: 15px;
         border-radius: 0;
-        z-index: 1000;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         display: flex;
         flex-direction: column;
@@ -986,10 +942,6 @@ body {
     .main-content {
         margin-left: 0;
         padding: 15px;
-        padding-top: calc(var(--mobile-header-height, 200px) + 15px);
-        overflow-y: scroll;
-        height: 100vh;
-        transition: padding 0.4s ease-in-out, transform 0.4s ease-in-out;
     }
     
     .header h2 {
@@ -1000,32 +952,11 @@ body {
         font-size: 0.9rem;
     }
     
-    .sidebar-toggle {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #8b1538;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: var(--border-radius-sm);
-        font-weight: 600;
-        cursor: pointer;
-        margin-bottom: 15px;
-        width: 100%;
-    }
-    
     .sidebar-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-in-out, opacity 0.3s ease;
-        opacity: 0;
-    }
-    
-    .sidebar-content.show {
-        max-height: calc(80vh - 120px); /* Account for header and toggle button */
-        overflow-y: auto; /* Enable scrolling when content overflows */
+        display: block;
+        max-height: none;
         opacity: 1;
+        overflow: visible;
     }
     
     .form-section {
@@ -1054,7 +985,7 @@ body {
     }
     
     .filter-section-sticky {
-        top: calc(var(--mobile-header-height, 200px));
+        top: 0;
     }
     
     .filter-section {
@@ -1118,7 +1049,6 @@ body {
         padding: 5px 10px;
     }
     
-    /* Empty State Mobile */
     .empty-state {
         padding: 40px 20px;
         min-height: 400px;
