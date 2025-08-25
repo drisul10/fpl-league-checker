@@ -133,14 +133,17 @@ class FPLAnalyzer {
     async checkForCachedData(leagueId, gameweek) {
         try {
             const filename = `gw${gameweek}-league${leagueId}.json`;
+            console.log(`🔍 Looking for cached data: ${filename}`);
             const response = await fetch(`/out/${filename}`);
             if (response.ok) {
                 const data = await response.json();
                 console.log(`📦 Found cached data: ${filename} with ${data.teams?.length || 0} teams`);
                 return data;
+            } else {
+                console.log(`❌ Cache file not accessible: ${response.status}`);
             }
         } catch (error) {
-            console.log(`🌐 No cached data found for league ${leagueId}, gameweek ${gameweek}`);
+            console.log(`🌐 No cached data found for league ${leagueId}, gameweek ${gameweek}:`, error.message);
         }
         return null;
     }

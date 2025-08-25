@@ -109,18 +109,8 @@ app.use(express.static('.', {
     }
 }));
 
-// Serve cached JSON files from out directory
-app.use('/out', express.static('./out', {
-    etag: false,
-    maxAge: 0,
-    setHeaders: (res, path) => {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Content-Type', 'application/json');
-    }
-}));
+// Serve cached JSON files from out directory as static files
+app.use('/out', express.static('./out'));
 
 // Secure JSON parsing with size limits
 app.use(express.json({ 
