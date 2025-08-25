@@ -126,6 +126,89 @@ class FPLAnalyzer {
     getCacheKey(entryId, gameweek) {
         return `${entryId}-${gameweek}`;
     }
+
+    /**
+     * Check for cached JSON data file
+     */
+    async checkForCachedData(leagueId, gameweek) {
+        try {
+            const filename = `gw${gameweek}-league${leagueId}.json`;
+            const response = await fetch(`/out/${filename}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`📦 Found cached data: ${filename} with ${data.teams?.length || 0} teams`);
+                return data;
+            }
+        } catch (error) {
+            console.log(`🌐 No cached data found for league ${leagueId}, gameweek ${gameweek}`);
+        }
+        return null;
+    }
+
+    /**
+     * Process cached data into the expected format for display
+     */
+    processCachedData(cachedData, config) {
+        if (!cachedData || !cachedData.teams) return [];
+        
+        return cachedData.teams.map(team => {
+            // Convert cached team data to expected format
+            const arsenalPlayers = this.arsenalPlayers;
+            let arsenalInStartingXI = 0;
+            let arsenalPlayerNames = [];
+            let captainIsArsenal = false;
+            let viceCaptainIsArsenal = false;
+            
+            // Analyze picks for rule compliance
+            team.picks.forEach(pick => {
+                if (pick.isStarting && arsenalPlayers.has(pick.playerId)) {
+                    arsenalInStartingXI++;
+                    arsenalPlayerNames.push(pick.name);
+                }
+                if (pick.isCaptain && arsenalPlayers.has(pick.playerId)) {
+                    captainIsArsenal = true;
+                }
+                if (pick.isViceCaptain && arsenalPlayers.has(pick.playerId)) {
+                    viceCaptainIsArsenal = true;
+                }
+            });
+            
+            // Check rule compliance
+            const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal.playersInStartingXI);
+            const captainPass = !config.arsenal.captain.enabled || !config.arsenal.captain.mustBeArsenal || captainIsArsenal;
+            const viceCaptainPass = !config.arsenal.viceCaptain.enabled || !config.arsenal.viceCaptain.mustBeArsenal || viceCaptainIsArsenal;
+            const allRulesPassed = playerCountPass && captainPass && viceCaptainPass;
+            
+            return {
+                entry_name: team.teamName,
+                player_name: team.managerName,
+                entry: team.entryId,
+                total: team.totalPoints,
+                rank: team.rank,
+                allRulesPassed: allRulesPassed,
+                players: team.picks.map(pick => ({
+                    name: pick.name,
+                    position: pick.position,
+                    isArsenal: arsenalPlayers.has(pick.playerId),
+                    isCaptain: pick.isCaptain,
+                    isViceCaptain: pick.isViceCaptain,
+                    isStarting: pick.isStarting
+                })),
+                ruleResults: {
+                    arsenalPlayersInStartingXI: {
+                        passed: playerCountPass,
+                        count: arsenalInStartingXI
+                    },
+                    arsenalCaptain: {
+                        passed: captainPass
+                    },
+                    arsenalViceCaptain: {
+                        passed: viceCaptainPass
+                    }
+                }
+            };
+        });
+    }
     
     isValidCache(timestamp) {
         return (Date.now() - timestamp) < this.cacheExpiry;
@@ -525,12 +608,30 @@ class FPLAnalyzer {
         try {
             this.ui.updateProgress(10, 'Loading master data...');
             
-            // Load master data
+            // Load master data first (needed for Arsenal players)
             await this.loadMasterData();
+            
+            this.ui.updateProgress(15, 'Checking for cached data...');
+            
+            // Check for cached JSON data first
+            const cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
+            if (cachedData) {
+                this.ui.updateProgress(30, 'Processing cached data...');
+                const results = this.processCachedData(cachedData, config);
+                
+                this.ui.updateProgress(100, `🎉 Analysis complete! ${results.length} teams loaded from cache instantly!`);
+                
+                // Set league name from cached data
+                this.leagueName = cachedData.metadata?.leagueName || `League ${config.league.id}`;
+                
+                // Display results
+                this.ui.displayResults(results, config, this.leagueName, `Data from cache (${cachedData.metadata?.generatedAt ? new Date(cachedData.metadata.generatedAt).toLocaleString() : 'Unknown time'})`);
+                return;
+            }
             
             this.ui.updateProgress(20, 'Fetching league teams...');
             
-            // Get league teams
+            // Get league teams (fallback to API)
             const teams = await this.getLeagueTeams(config.league.id);
             
             // Store original teams for retry logic
