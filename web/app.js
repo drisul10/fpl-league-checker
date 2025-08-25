@@ -177,13 +177,13 @@ class FPLAnalyzer {
             allTeams = allTeams.concat(pageResults);
             
             
-            // Smart pagination: detect last page by size
-            if (pageResults.length < EXPECTED_PAGE_SIZE) {
+            // Primary check: use has_next flag from API
+            if (data.standings.has_next === false) {
                 break;
             }
             
-            // Fallback check
-            if (data.standings.has_next === false) {
+            // Fallback: detect last page by size (only if has_next is missing)
+            if (data.standings.has_next === undefined && pageResults.length < EXPECTED_PAGE_SIZE) {
                 break;
             }
             
