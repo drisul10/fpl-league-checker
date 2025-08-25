@@ -168,29 +168,38 @@ async function main() {
         let results = [];
         let processed = 0;
         const totalTeams = teams.length;
+        const batchSize = 50;
         
-        for (const team of teams) {
-            console.log(`⚙️ Fetching team ${++processed}/${totalTeams}: ${team.player_name} (${team.entry_name})`);
+        // Process teams in batches of 50
+        for (let i = 0; i < totalTeams; i += batchSize) {
+            const batch = teams.slice(i, i + batchSize);
+            const batchPromises = batch.map(async (team) => {
+                const teamPicks = await getTeamPicks(team.entry, GAMEWEEK);
+                processed++;
+                console.log(`⚙️ Fetching team ${processed}/${totalTeams}: ${team.player_name} (${team.entry_name})`);
+                
+                if (teamPicks) {
+                    return {
+                        entryId: team.entry,
+                        teamName: team.entry_name,
+                        managerName: team.player_name,
+                        rank: team.rank,
+                        totalPoints: team.total,
+                        gameweekPoints: teamPicks.eventPoints,
+                        entryPointsTotal: teamPicks.entryPointsTotal,
+                        picks: teamPicks.players,
+                        captain: teamPicks.captain,
+                        viceCaptain: teamPicks.viceCaptain
+                    };
+                }
+                return null;
+            });
             
-            const teamPicks = await getTeamPicks(team.entry, GAMEWEEK);
+            // Wait for batch to complete
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults.filter(result => result !== null));
             
-            if (teamPicks) {
-                results.push({
-                    entryId: team.entry,
-                    teamName: team.entry_name,
-                    managerName: team.player_name,
-                    rank: team.rank,
-                    totalPoints: team.total,
-                    gameweekPoints: teamPicks.eventPoints,
-                    entryPointsTotal: teamPicks.entryPointsTotal,
-                    picks: teamPicks.players,
-                    captain: teamPicks.captain,
-                    viceCaptain: teamPicks.viceCaptain
-                });
-            }
-            
-            // Add delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
+            console.log(`📊 Batch ${Math.ceil((i + batchSize) / batchSize)} complete: ${results.length} teams processed`);
         }
         
         // Generate JSON report
