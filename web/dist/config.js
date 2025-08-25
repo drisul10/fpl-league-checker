@@ -8,7 +8,7 @@ const FPLConfig = {
             teamPicks: "/entry/{entryId}/event/{gameweek}/picks/"
         },
         requestDelay: 500,
-        batchSize: 50,
+        batchSize: 5,
         maxRetries: 3,
         timeout: 10000
     },

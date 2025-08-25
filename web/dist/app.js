@@ -7,6 +7,16 @@ class FPLAnalyzer {
         this.isProcessing = false;
         this.currentGameweek = null;
         
+        // Cache for team picks data
+        this.teamCache = new Map(); // key: "entryId-gameweek", value: {data, timestamp}
+        this.cacheExpiry = 60 * 60 * 1000; // 1 hour in milliseconds
+        
+        // Failed request tracking for resilient retry
+        this.failedTeams = [];
+        this.retryAttempts = new Map(); // track retry count per team
+        this.maxRetries = 3;
+        this.retryDelay = 5000; // 5 seconds pause before retry
+        
         this.ui = new UIController();
         this.init();
     }
@@ -110,6 +120,114 @@ class FPLAnalyzer {
     }
 
     /**
+     * Cache helper methods
+     */
+    getCacheKey(entryId, gameweek) {
+        return `${entryId}-${gameweek}`;
+    }
+    
+    isValidCache(timestamp) {
+        return (Date.now() - timestamp) < this.cacheExpiry;
+    }
+    
+    getFromCache(entryId, gameweek) {
+        const key = this.getCacheKey(entryId, gameweek);
+        const cached = this.teamCache.get(key);
+        
+        if (cached && this.isValidCache(cached.timestamp)) {
+            console.log(`💾 Cache hit for team ${entryId}, GW ${gameweek}`);
+            return cached.data;
+        }
+        
+        return null;
+    }
+    
+    saveToCache(entryId, gameweek, data) {
+        const key = this.getCacheKey(entryId, gameweek);
+        this.teamCache.set(key, {
+            data: data,
+            timestamp: Date.now()
+        });
+    }
+    
+    clearExpiredCache() {
+        const now = Date.now();
+        for (const [key, value] of this.teamCache.entries()) {
+            if ((now - value.timestamp) >= this.cacheExpiry) {
+                this.teamCache.delete(key);
+            }
+        }
+    }
+
+    /**
+     * Failed request tracking methods
+     */
+    getRetryKey(entryId, gameweek) {
+        return `${entryId}-${gameweek}`;
+    }
+    
+    addFailedTeam(entryId, gameweek, config, error) {
+        const retryKey = this.getRetryKey(entryId, gameweek);
+        const currentAttempts = this.retryAttempts.get(retryKey) || 0;
+        
+        if (currentAttempts < this.maxRetries) {
+            this.failedTeams.push({ entryId, gameweek, config, error: error.message });
+            this.retryAttempts.set(retryKey, currentAttempts + 1);
+            console.warn(`🔄 Team ${entryId} failed (${error.message}), will retry (attempt ${currentAttempts + 1}/${this.maxRetries})`);
+            return true; // Will retry
+        } else {
+            console.error(`❌ Team ${entryId} failed permanently after ${this.maxRetries} attempts: ${error.message}`);
+            return false; // Max retries reached
+        }
+    }
+    
+    clearFailedTeams() {
+        this.failedTeams = [];
+        this.retryAttempts.clear();
+    }
+
+    /**
+     * Retry all failed teams
+     */
+    async retryFailedTeams(config) {
+        const teamsToRetry = [...this.failedTeams]; // Copy array
+        this.failedTeams = []; // Clear for new failures
+        
+        const results = [];
+        const batchSize = Math.min(3, teamsToRetry.length); // Smaller batches for retries
+        
+        for (let i = 0; i < teamsToRetry.length; i += batchSize) {
+            const batch = teamsToRetry.slice(i, Math.min(i + batchSize, teamsToRetry.length));
+            const batchPromises = batch.map(async (failedTeam) => {
+                const { entryId, gameweek, config: teamConfig } = failedTeam;
+                
+                try {
+                    const checkResult = await this.checkTeamCompliance(entryId, gameweek, teamConfig);
+                    if (checkResult) {
+                        console.log(`✅ Team ${entryId} succeeded on retry!`);
+                        // Find the original team data
+                        const originalTeam = this.originalTeams?.find(t => t.entry === entryId) || { entry: entryId };
+                        return { ...originalTeam, ...checkResult };
+                    }
+                } catch (error) {
+                    console.error(`🔄 Team ${entryId} failed again on retry: ${error.message}`);
+                }
+                return null;
+            });
+            
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults.filter(r => r !== null));
+            
+            // Small delay between retry batches
+            if (i + batchSize < teamsToRetry.length) {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second between retry batches
+            }
+        }
+        
+        return results;
+    }
+
+    /**
      * Load master data and identify Arsenal players
      */
     async loadMasterData() {
@@ -177,13 +295,13 @@ class FPLAnalyzer {
             allTeams = allTeams.concat(pageResults);
             
             
-            // Smart pagination: detect last page by size
-            if (pageResults.length < EXPECTED_PAGE_SIZE) {
+            // Primary check: use has_next flag from API
+            if (data.standings.has_next === false) {
                 break;
             }
             
-            // Fallback check
-            if (data.standings.has_next === false) {
+            // Fallback: detect last page by size (only if has_next is missing)
+            if (data.standings.has_next === undefined && pageResults.length < EXPECTED_PAGE_SIZE) {
                 break;
             }
             
@@ -215,13 +333,46 @@ class FPLAnalyzer {
      * Check team compliance against Arsenal rules
      */
     async checkTeamCompliance(entryId, gameweek, config) {
-        const url = FPLConfig.api.baseUrl + 
-            FPLConfig.api.endpoints.teamPicks
-                .replace('{entryId}', entryId)
-                .replace('{gameweek}', gameweek);
+        // Check cache first
+        const cachedData = this.getFromCache(entryId, gameweek);
+        let data;
+        
+        if (cachedData) {
+            data = cachedData;
+        } else {
+            // No cache or expired, fetch from API
+            const url = FPLConfig.api.baseUrl + 
+                FPLConfig.api.endpoints.teamPicks
+                    .replace('{entryId}', entryId)
+                    .replace('{gameweek}', gameweek);
+            
+            try {
+                data = await this.fetchData(url);
+                // Save to cache for future use
+                this.saveToCache(entryId, gameweek, data);
+            } catch (error) {
+                // Check if it's a retryable error (429, timeout, network issues)
+                const isRetryableError = 
+                    error.message.includes('429') || 
+                    error.message.includes('timeout') ||
+                    error.message.includes('500') ||
+                    error.message.includes('502') ||
+                    error.message.includes('503') ||
+                    error.message.includes('fetch');
+                
+                if (isRetryableError) {
+                    // Add to failed teams for retry
+                    this.addFailedTeam(entryId, gameweek, config, error);
+                    return null; // Will be retried later
+                } else {
+                    // Non-retryable error (team doesn't exist, etc.)
+                    console.error(`❌ Permanent error for team ${entryId}: ${error.message}`);
+                    return null;
+                }
+            }
+        }
         
         try {
-            const data = await this.fetchData(url);
             
             let arsenalInStartingXI = 0;
             let arsenalPlayerNames = [];
@@ -295,8 +446,15 @@ class FPLAnalyzer {
             // Get league teams
             const teams = await this.getLeagueTeams(config.league.id);
             
-            this.ui.updateProgress(30, `Processing ${teams.length} teams...`);
+            // Store original teams for retry logic
+            this.originalTeams = teams;
             
+            // Clear failed teams from previous runs
+            this.clearFailedTeams();
+            this.clearExpiredCache();
+            
+            this.ui.updateProgress(30, `Processing ${teams.length} teams...`);
+            console.log(`📊 Starting with ${this.teamCache.size} cached teams`);
             
             const results = [];
             const batchSize = FPLConfig.api.batchSize;
@@ -323,7 +481,41 @@ class FPLAnalyzer {
                 }
             }
             
-            this.ui.updateProgress(100, 'Analysis complete!');
+            // Process failed teams with resilient retry
+            let retryRound = 1;
+            while (this.failedTeams.length > 0) {
+                const failedCount = this.failedTeams.length;
+                console.log(`🔄 Starting retry round ${retryRound} for ${failedCount} failed teams...`);
+                
+                this.ui.updateProgress(95, `⏱️ Retry round ${retryRound}: Pausing ${this.retryDelay/1000}s before retrying ${failedCount} teams...`);
+                
+                // 5-second pause before retry
+                await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+                
+                this.ui.updateProgress(97, `🔄 Retrying ${failedCount} failed teams (round ${retryRound})...`);
+                
+                // Process all failed teams
+                const retryResults = await this.retryFailedTeams(config);
+                results.push(...retryResults);
+                
+                retryRound++;
+                
+                // Safety limit to prevent infinite loops
+                if (retryRound > 5) {
+                    console.warn(`⚠️ Stopping retries after 5 rounds. ${this.failedTeams.length} teams still failing.`);
+                    break;
+                }
+            }
+            
+            const totalTeams = results.length;
+            const finalMessage = this.failedTeams.length > 0 
+                ? `Analysis complete! ${totalTeams} teams processed, ${this.failedTeams.length} failed permanently.`
+                : `🎉 Analysis complete! All ${totalTeams} teams processed successfully!`;
+            
+            this.ui.updateProgress(100, finalMessage);
+            
+            // Log final stats
+            console.log(`📊 Final Results: ${totalTeams} successful, ${this.failedTeams.length} failed, Cache: ${this.teamCache.size} teams`);
             
             // Display results
             this.ui.displayResults(results, config, this.leagueName, this.dataUpdatedAt);
