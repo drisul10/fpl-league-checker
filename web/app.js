@@ -196,6 +196,12 @@ class FPLAnalyzer {
                 total: team.totalPoints,
                 rank: team.rank,
                 allRulesPassed: allRulesPassed,
+                arsenalInStartingXI: arsenalInStartingXI,
+                arsenalPlayerNames: arsenalPlayerNames,
+                captainName: team.captain?.name || 'Unknown',
+                viceCaptainName: team.viceCaptain?.name || 'Unknown',
+                captainIsArsenal: captainIsArsenal,
+                viceCaptainIsArsenal: viceCaptainIsArsenal,
                 players: (team.picks || []).map(pick => ({
                     name: pick.name || 'Unknown',
                     position: pick.position || 0,
@@ -204,6 +210,11 @@ class FPLAnalyzer {
                     isViceCaptain: !!pick.isViceCaptain,
                     isStarting: !!pick.isStarting
                 })),
+                checks: {
+                    playerCount: playerCountPass,
+                    captain: captainPass,
+                    viceCaptain: viceCaptainPass
+                },
                 ruleResults: {
                     arsenalPlayersInStartingXI: {
                         passed: playerCountPass,
