@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>FPL Rules Checker | Fantasy Premier League Team Compliance Analyzer</title>
+    <meta name="description" content="Analyze your Fantasy Premier League team for rule compliance. Check Arsenal player requirements, captain rules, and team composition instantly.">
+    <meta name="keywords" content="FPL, Fantasy Premier League, Arsenal, team analyzer, rules checker, football, soccer">
+    <meta name="author" content="Andri Sul">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="FPL Rules Checker | Fantasy Premier League Team Compliance">
+    <meta property="og:description" content="Analyze your Fantasy Premier League team for rule compliance instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fplchecker.andri.land">
+    <meta property="og:image" content="/og-image.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:creator" content="@drisul10">
+    <meta name="twitter:title" content="FPL Rules Checker">
+    <meta name="twitter:description" content="Analyze your Fantasy Premier League team for rule compliance instantly.">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ef0107">
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://fantasy.premierleague.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fantasy.premierleague.com">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "FPL Rules Checker",
+        "description": "Analyze your Fantasy Premier League team for rule compliance",
+        "url": "https://fplchecker.andri.land",
+        "author": {
+            "@type": "Person",
+            "name": "Andri Sul",
+            "url": "https://github.com/drisul10"
+        },
+        "applicationCategory": "Sports",
+        "operatingSystem": "Web Browser"
+    }
+    </script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main class="app-layout" role="main">
+        <aside class="sidebar" role="complementary" aria-label="Application controls and settings">
+            <header class="header" role="banner">
+                <h2>⚽ FPL Rules Checker</h2>
+                <p>Analyze your Fantasy Premier League for team compliance</p>
+            </header>
+            
+            <section class="credits" aria-label="Author information">
+                <p>Created by <strong>Andri Sul</strong> · 
+                    <a href="https://github.com/drisul10" target="_blank" rel="noopener noreferrer" aria-label="Visit Andri Sul's GitHub profile">GitHub</a> · 
+                    <a href="https://x.com/drisul10" target="_blank" rel="noopener noreferrer" aria-label="Visit @drisul10 on X (formerly Twitter)">@drisul10</a>
+                </p>
+            </section>
+            
+            <button class="sidebar-toggle" id="sidebarToggle" 
+                    aria-expanded="false" 
+                    aria-controls="sidebarContent" 
+                    aria-label="Toggle league analysis settings">
+                📊 League Analysis Settings
+                <span class="toggle-arrow" aria-hidden="true">▼</span>
+            </button>
+            
+            <div class="sidebar-content" id="sidebarContent" role="region" aria-label="League analysis form">
+                <form id="fplForm" novalidate aria-label="Fantasy Premier League analysis settings">
+                    <fieldset class="form-section" role="group" aria-labelledby="league-settings-heading">
+                        <legend><h2 id="league-settings-heading">League Settings</h2></legend>
+                        <div class="form-group">
+                            <label for="leagueId">League ID *</label>
+                            <input type="number" 
+                                   id="leagueId" 
+                                   required 
+                                   aria-required="true"
+                                   aria-describedby="leagueId-help"
+                                   placeholder="e.g. 436453"
+                                   min="1"
+                                   max="999999999"
+                                   pattern="[0-9]{1,9}"
+                                   title="Enter a valid league ID between 1 and 999999999">
+                            <div id="leagueId-help" class="sr-only">Enter your Fantasy Premier League ID number</div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="rules-section" role="group" aria-labelledby="rules-heading">
+                        <legend><h2 id="rules-heading">📋 Arsenal Rules</h2></legend>
+                        
+                        <div class="rule-item" role="group" aria-labelledby="players-rule-label">
+                            <div class="rule-checkbox">
+                                <input type="checkbox" 
+                                       id="playersRule" 
+                                       checked 
+                                       aria-describedby="players-rule-desc">
+                                <label for="playersRule" id="players-rule-label">Arsenal Players in Starting XI</label>
+                            </div>
+                            <div class="rule-details" id="players-rule-desc">
+                                <label for="playersOperator" class="sr-only">Player count requirement type</label>
+                                <select id="playersOperator" aria-label="Player count requirement type">
+                                    <option value="minimum">Minimum</option>
+                                    <option value="exactly">Exactly</option>
+                                    <option value="maximum">Maximum</option>
+                                </select>
+                                <label for="playersCount" class="sr-only">Number of Arsenal players required</label>
+                                <input type="number" 
+                                       id="playersCount" 
+                                       value="2" 
+                                       min="0" 
+                                       max="11"
+                                       pattern="[0-9]|1[01]"
+                                       title="Enter a number between 0 and 11"
+                                       aria-label="Number of Arsenal players required">
+                            </div>
+                        </div>
+                        
+                        <div class="rule-item">
+                            <div class="rule-checkbox">
+                                <input type="checkbox" 
+                                       id="captainRule" 
+                                       checked
+                                       aria-describedby="captain-rule-desc">
+                                <label for="captainRule">Captain must be Arsenal player</label>
+                                <div id="captain-rule-desc" class="sr-only">Requires the team captain to be an Arsenal player</div>
+                            </div>
+                        </div>
+                        
+                        <div class="rule-item">
+                            <div class="rule-checkbox">
+                                <input type="checkbox" 
+                                       id="viceCaptainRule" 
+                                       checked
+                                       aria-describedby="vice-captain-rule-desc">
+                                <label for="viceCaptainRule">Vice-Captain must be Arsenal player</label>
+                                <div id="vice-captain-rule-desc" class="sr-only">Requires the team vice-captain to be an Arsenal player</div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" 
+                            id="checkBtn" 
+                            class="btn-primary"
+                            aria-describedby="analyze-btn-help">
+                        <span aria-hidden="true">🔍</span> Analyze League
+                    </button>
+                    <div id="analyze-btn-help" class="sr-only">Click to start analyzing your league for rule compliance</div>
+                </form>
+            </div>
+        </aside>
+        
+        <section class="main-content" id="main-content" role="region" aria-label="Analysis results and status">
+            <div class="progress-section" 
+                 id="progressSection" 
+                 role="status" 
+                 aria-live="polite" 
+                 aria-label="Analysis progress indicator">
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText" aria-live="polite">Initializing...</div>
+            </div>
+            
+            <div class="error-section" 
+                 id="errorSection" 
+                 role="alert" 
+                 aria-live="assertive" 
+                 aria-label="Error messages">
+                <h2>❌ Error</h2>
+                <div id="errorMessage"></div>
+            </div>
+            
+            <section class="results-section" 
+                     id="resultsSection" 
+                     role="region" 
+                     aria-label="League analysis results">
+                <div class="empty-state">
+                    <div class="empty-state-content">
+                        <h2>⚽ Welcome to FPL Rules Checker</h2>
+                        <p>Enter your league ID and configure rules to analyze your Fantasy Premier League for team compliance.</p>
+                        <ol class="empty-state-steps" aria-label="How to use this application">
+                            <li class="step">
+                                <span class="step-number" aria-hidden="true">1</span>
+                                <span class="step-text">Enter your League ID</span>
+                            </li>
+                            <li class="step">
+                                <span class="step-number" aria-hidden="true">2</span>
+                                <span class="step-text">Configure Rules</span>
+                            </li>
+                            <li class="step">
+                                <span class="step-number" aria-hidden="true">3</span>
+                                <span class="step-text">Click "Analyze League"</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+    
+    
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
