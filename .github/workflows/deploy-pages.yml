@@ -26,21 +26,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Install dependencies
-      run: |
-        cd web
-        npm install
-    
-    - name: Build static version
-      run: |
-        cd web  
-        npm run build:static
-    
     - name: Setup Pages
       uses: actions/configure-pages@v4
       

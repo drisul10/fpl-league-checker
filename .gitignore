@@ -89,8 +89,7 @@ web/reports/
 # Configuration backups
 rules-config.backup.js
 
-# Deployment artifacts
-web/dist/
+# Deployment artifacts  
 web/reports/
 deploy-info.json
 

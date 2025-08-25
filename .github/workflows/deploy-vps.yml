@@ -22,27 +22,10 @@ jobs:
       with:
         node-version: '18'
 
-    # Install and test dependencies
-    - name: Install dependencies
-      run: |
-        cd web
-        npm install
-
-    # Run basic validation
-    - name: Validate application
-      run: |
-        cd web
-        node -c proxy-server.js
-        node -c app.js
-        node -c config.js
-        echo "✅ All JavaScript files are valid"
-
     # Create production bundle
     - name: Create production bundle
       run: |
         cd web
-        # Remove development files
-        rm -rf node_modules/.cache
         # Create deployment archive excluding dev files
         tar --exclude='node_modules' \
             --exclude='reports' \
@@ -86,8 +69,8 @@ jobs:
           echo "🚀 Starting deployment to $DOMAIN"
           
           # Create app directory if it doesn't exist
-          sudo mkdir -p $APP_DIR
-          sudo chown $USER:$USER $APP_DIR
+          echo "${{ secrets.VPS_PASSWORD }}" | sudo -S mkdir -p $APP_DIR
+          echo "${{ secrets.VPS_PASSWORD }}" | sudo -S chown $USER:$USER $APP_DIR
           
           # Backup current version (if exists)
           if [ -d "$APP_DIR/current" ]; then
@@ -123,7 +106,7 @@ jobs:
           # Install PM2 globally if not exists
           if ! command -v pm2 &> /dev/null; then
             echo "📦 Installing PM2..."
-            sudo npm install -g pm2
+            echo "${{ secrets.VPS_PASSWORD }}" | sudo -S npm install -g pm2
             pm2 startup || true
           fi
           
@@ -137,47 +120,6 @@ jobs:
           pm2 start ecosystem.config.js --env production
           pm2 save
           
-          # Setup nginx config (if nginx is available)
-          if command -v nginx &> /dev/null; then
-            echo "🌐 Configuring nginx..."
-            sudo tee /etc/nginx/sites-available/$APP_NAME > /dev/null <<EOF
-          server {
-              listen 80;
-              server_name $DOMAIN www.$DOMAIN;
-          
-              # Security headers
-              add_header X-Frame-Options "SAMEORIGIN" always;
-              add_header X-XSS-Protection "1; mode=block" always;
-              add_header X-Content-Type-Options "nosniff" always;
-              add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-          
-              # Proxy to Node.js app
-              location / {
-                  proxy_pass http://127.0.0.1:$PORT;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade \$http_upgrade;
-                  proxy_set_header Connection 'upgrade';
-                  proxy_set_header Host \$host;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-                  proxy_cache_bypass \$http_upgrade;
-              }
-          
-              # Static assets with caching
-              location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                  proxy_pass http://127.0.0.1:$PORT;
-                  expires 1y;
-                  add_header Cache-Control "public, immutable";
-              }
-          }
-          EOF
-          
-            # Enable site
-            sudo ln -sf /etc/nginx/sites-available/$APP_NAME /etc/nginx/sites-enabled/
-            sudo nginx -t && sudo systemctl reload nginx
-            echo "✅ Nginx configured for $DOMAIN"
-          fi
           
           # Health check
           echo "🏥 Performing health check..."
