@@ -16,6 +16,7 @@ class FPLAnalyzer {
         this.retryAttempts = new Map(); // track retry count per team
         this.maxRetries = 3;
         this.retryDelay = 5000; // 5 seconds pause before retry
+        this.shouldPauseImmediately = false; // Flag for immediate pause on 429
         
         this.ui = new UIController();
         this.init();
@@ -173,7 +174,10 @@ class FPLAnalyzer {
         if (currentAttempts < this.maxRetries) {
             this.failedTeams.push({ entryId, gameweek, config, error: error.message });
             this.retryAttempts.set(retryKey, currentAttempts + 1);
-            console.warn(`🔄 Team ${entryId} failed (${error.message}), will retry (attempt ${currentAttempts + 1}/${this.maxRetries})`);
+            console.warn(`🚨 IMMEDIATE PAUSE: Team ${entryId} failed (${error.message}), pausing process (attempt ${currentAttempts + 1}/${this.maxRetries})`);
+            
+            // Trigger immediate pause
+            this.shouldPauseImmediately = true;
             return true; // Will retry
         } else {
             console.error(`❌ Team ${entryId} failed permanently after ${this.maxRetries} attempts: ${error.message}`);
@@ -459,8 +463,12 @@ class FPLAnalyzer {
             const results = [];
             const batchSize = FPLConfig.api.batchSize;
             
-            // Process teams in batches
+            // Process teams in batches with immediate pause on 429
+            let processedTeams = 0;
             for (let i = 0; i < teams.length; i += batchSize) {
+                // Reset pause flag for this batch
+                this.shouldPauseImmediately = false;
+                
                 const batch = teams.slice(i, Math.min(i + batchSize, teams.length));
                 const batchPromises = batch.map(team => 
                     this.checkTeamCompliance(team.entry, config.league.gameweek, config).then(checkResult => 
@@ -469,14 +477,37 @@ class FPLAnalyzer {
                 );
                 
                 const batchResults = await Promise.all(batchPromises);
-                results.push(...batchResults.filter(r => r !== null));
+                const validResults = batchResults.filter(r => r !== null);
+                results.push(...validResults);
+                processedTeams += batch.length;
+                
+                // Check if we need to pause immediately due to 429 error
+                if (this.shouldPauseImmediately && this.failedTeams.length > 0) {
+                    const failedCount = this.failedTeams.length;
+                    console.log(`🚨 IMMEDIATE PAUSE triggered! Processed ${processedTeams}/${teams.length} teams, ${failedCount} failed.`);
+                    
+                    this.ui.updateProgress(50, `⏸️ Pausing for ${this.retryDelay/1000}s due to rate limit (${processedTeams}/${teams.length} processed)...`);
+                    
+                    // 5-second pause
+                    await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+                    
+                    // Retry failed teams immediately
+                    this.ui.updateProgress(55, `🔄 Retrying ${failedCount} failed teams...`);
+                    const retryResults = await this.retryFailedTeams(config);
+                    results.push(...retryResults);
+                    
+                    console.log(`✅ Resumed processing after pause. Failed teams retry: ${retryResults.length}/${failedCount} succeeded.`);
+                    
+                    // Reset pause flag and continue
+                    this.shouldPauseImmediately = false;
+                }
                 
                 // Update progress
-                const progress = 30 + Math.floor((i + batchSize) / teams.length * 60);
-                this.ui.updateProgress(progress, `Processed ${Math.min(i + batchSize, teams.length)}/${teams.length} teams...`);
+                const progress = 30 + Math.floor(processedTeams / teams.length * 60);
+                this.ui.updateProgress(progress, `Processed ${processedTeams}/${teams.length} teams...`);
                 
-                // Delay between batches
-                if (FPLConfig.api.requestDelay > 0) {
+                // Normal delay between batches (if not paused)
+                if (!this.shouldPauseImmediately && FPLConfig.api.requestDelay > 0 && i + batchSize < teams.length) {
                     await new Promise(resolve => setTimeout(resolve, FPLConfig.api.requestDelay));
                 }
             }
