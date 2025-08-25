@@ -503,7 +503,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api/')) {
+    if (!req.path.startsWith('/api/') && !req.path.startsWith('/out/')) {
         res.sendFile(path.join(__dirname, 'index.html'));
     }
 });
