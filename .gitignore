@@ -1,5 +1,6 @@
 # Output files and generated reports
 *.report.json
+out/
 
 # Node modules
 node_modules/
@@ -86,6 +87,7 @@ web/reports/
 
 # Configuration backups
 rules-config.backup.js
+web/rules-config.backup.js
 
 # Deployment artifacts  
 web/reports/

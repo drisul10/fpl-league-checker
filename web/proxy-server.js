@@ -110,7 +110,7 @@ app.use(express.static('.', {
 }));
 
 // Serve cached JSON files from out directory
-app.use('/out', express.static('../out', {
+app.use('/out', express.static('./out', {
     etag: false,
     maxAge: 0,
     setHeaders: (res, path) => {
