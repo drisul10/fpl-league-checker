@@ -209,11 +209,19 @@ class FPLAnalyzer {
     }
     
     /**
-     * Calculate next delay with exponential backoff: 5s, 10s, 20s, 40s, 80s...
+     * Calculate next delay with exponential backoff: 5s, 10s, 20s, 40s, then reset to 5s
      */
     calculateNextDelay() {
         this.pauseRound++;
         this.currentRetryDelay = this.baseRetryDelay * Math.pow(2, this.pauseRound - 1);
+        
+        // Cap at 40s for fairness, then reset to 5s
+        if (this.currentRetryDelay > 40000) {
+            console.log(`⚖️ Fairness reset: Reached 40s limit, resetting to 5s for next round`);
+            this.currentRetryDelay = this.baseRetryDelay; // Reset to 5s
+            this.pauseRound = 1; // Reset round counter
+        }
+        
         return this.currentRetryDelay;
     }
 
