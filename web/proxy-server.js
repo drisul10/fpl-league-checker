@@ -505,6 +505,9 @@ app.get('/sitemap.xml', (req, res) => {
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api/') && !req.path.startsWith('/out/')) {
         res.sendFile(path.join(__dirname, 'index.html'));
+    } else if (req.path.startsWith('/out/')) {
+        // If /out/ request reaches here, file wasn't found
+        res.status(404).json({ error: 'File not found' });
     }
 });
 
