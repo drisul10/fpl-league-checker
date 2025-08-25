@@ -588,32 +588,6 @@ class FPLAnalyzer {
                 }
             }
             
-            // Process failed teams with resilient retry
-            let retryRound = 1;
-            while (this.failedTeams.length > 0) {
-                const failedCount = this.failedTeams.length;
-                console.log(`🔄 Starting retry round ${retryRound} for ${failedCount} failed teams...`);
-                
-                this.ui.updateProgress(95, `⏱️ Retry round ${retryRound}: Pausing ${this.retryDelay/1000}s before retrying ${failedCount} teams...`);
-                
-                // 5-second pause before retry
-                await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                
-                this.ui.updateProgress(97, `🔄 Retrying ${failedCount} failed teams (round ${retryRound})...`);
-                
-                // Process all failed teams
-                const retryResults = await this.retryFailedTeams(config);
-                results.push(...retryResults);
-                
-                retryRound++;
-                
-                // Safety limit to prevent infinite loops
-                if (retryRound > 5) {
-                    console.warn(`⚠️ Stopping retries after 5 rounds. ${this.failedTeams.length} teams still failing.`);
-                    break;
-                }
-            }
-            
             const totalTeams = results.length;
             const finalMessage = this.failedTeams.length > 0 
                 ? `Analysis complete! ${totalTeams} teams processed, ${this.failedTeams.length} failed permanently.`
