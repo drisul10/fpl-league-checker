@@ -161,25 +161,27 @@ class FPLAnalyzer {
         
         return cachedData.teams.map(team => {
             // Convert cached team data to expected format
-            const arsenalPlayers = this.arsenalPlayers;
+            const arsenalPlayers = this.arsenalPlayers || new Set();
             let arsenalInStartingXI = 0;
             let arsenalPlayerNames = [];
             let captainIsArsenal = false;
             let viceCaptainIsArsenal = false;
             
-            // Analyze picks for rule compliance
-            team.picks.forEach(pick => {
-                if (pick.isStarting && arsenalPlayers.has(pick.playerId)) {
-                    arsenalInStartingXI++;
-                    arsenalPlayerNames.push(pick.name);
-                }
-                if (pick.isCaptain && arsenalPlayers.has(pick.playerId)) {
-                    captainIsArsenal = true;
-                }
-                if (pick.isViceCaptain && arsenalPlayers.has(pick.playerId)) {
-                    viceCaptainIsArsenal = true;
-                }
-            });
+            // Analyze picks for rule compliance (safely)
+            if (team.picks && Array.isArray(team.picks)) {
+                team.picks.forEach(pick => {
+                    if (pick.isStarting && arsenalPlayers.has(pick.playerId)) {
+                        arsenalInStartingXI++;
+                        arsenalPlayerNames.push(pick.name);
+                    }
+                    if (pick.isCaptain && arsenalPlayers.has(pick.playerId)) {
+                        captainIsArsenal = true;
+                    }
+                    if (pick.isViceCaptain && arsenalPlayers.has(pick.playerId)) {
+                        viceCaptainIsArsenal = true;
+                    }
+                });
+            }
             
             // Check rule compliance
             const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal?.playersInStartingXI || {enabled: false});
@@ -194,13 +196,13 @@ class FPLAnalyzer {
                 total: team.totalPoints,
                 rank: team.rank,
                 allRulesPassed: allRulesPassed,
-                players: team.picks.map(pick => ({
-                    name: pick.name,
-                    position: pick.position,
+                players: (team.picks || []).map(pick => ({
+                    name: pick.name || 'Unknown',
+                    position: pick.position || 0,
                     isArsenal: arsenalPlayers.has(pick.playerId),
-                    isCaptain: pick.isCaptain,
-                    isViceCaptain: pick.isViceCaptain,
-                    isStarting: pick.isStarting
+                    isCaptain: !!pick.isCaptain,
+                    isViceCaptain: !!pick.isViceCaptain,
+                    isStarting: !!pick.isStarting
                 })),
                 ruleResults: {
                     arsenalPlayersInStartingXI: {
