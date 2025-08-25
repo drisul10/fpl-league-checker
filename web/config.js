@@ -7,7 +7,7 @@ const FPLConfig = {
             leagueStandings: "/leagues-classic/{leagueId}/standings/",
             teamPicks: "/entry/{entryId}/event/{gameweek}/picks/"
         },
-        requestDelay: 1000,
+        requestDelay: 600,
         batchSize: 1,
         maxRetries: 3,
         timeout: 10000
