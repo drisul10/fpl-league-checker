@@ -1,0 +1,21 @@
+{
+  "name": "FPL Rules Checker",
+  "short_name": "FPL Checker",
+  "description": "Analyze your Fantasy Premier League team for rule compliance",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ef0107",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["sports", "utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='45' fill='%23ef0107'/%3e%3ctext x='50' y='60' text-anchor='middle' fill='white' font-size='20' font-weight='bold'%3eFPL%3c/text%3e%3c/svg%3e",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

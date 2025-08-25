@@ -1,0 +1,207 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'web/**'
+      - '.github/workflows/deploy-vps.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip-vps]')"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: web/package-lock.json
+
+    # Install and test dependencies
+    - name: Install dependencies
+      run: |
+        cd web
+        npm ci
+
+    # Run basic validation
+    - name: Validate application
+      run: |
+        cd web
+        node -c proxy-server.js
+        node -c app.js
+        node -c config.js
+        echo "✅ All JavaScript files are valid"
+
+    # Create production bundle
+    - name: Create production bundle
+      run: |
+        cd web
+        # Remove development files
+        rm -rf node_modules/.cache
+        # Create deployment archive excluding dev files
+        tar --exclude='node_modules' \
+            --exclude='reports' \
+            --exclude='dist' \
+            --exclude='.env.local' \
+            --exclude='*.log' \
+            -czf ../fpl-app.tar.gz .
+        cd ..
+        echo "✅ Production bundle created: $(ls -lh fpl-app.tar.gz)"
+
+    # Deploy to VPS
+    - name: Deploy to VPS
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+        port: ${{ secrets.VPS_SSH_PORT || 22 }}
+        source: "fpl-app.tar.gz"
+        target: "/tmp/"
+
+    # SSH Commands - Deploy and restart
+    - name: Deploy and restart application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+        port: ${{ secrets.VPS_SSH_PORT || 22 }}
+        script: |
+          set -e
+          
+          # Configuration
+          APP_DIR="${{ secrets.APP_DIR }}"
+          APP_NAME="fpl-checker"
+          DOMAIN="${{ secrets.DOMAIN }}"
+          PORT="${{ secrets.PORT }}"
+          
+          echo "🚀 Starting deployment to $DOMAIN"
+          
+          # Create app directory if it doesn't exist
+          sudo mkdir -p $APP_DIR
+          sudo chown $USER:$USER $APP_DIR
+          
+          # Backup current version (if exists)
+          if [ -d "$APP_DIR/current" ]; then
+            echo "📦 Backing up current version..."
+            rm -rf $APP_DIR/backup 2>/dev/null || true
+            mv $APP_DIR/current $APP_DIR/backup
+          fi
+          
+          # Extract new version
+          echo "📂 Extracting new version..."
+          mkdir -p $APP_DIR/current
+          cd $APP_DIR/current
+          tar -xzf /tmp/fpl-app.tar.gz
+          rm /tmp/fpl-app.tar.gz
+          
+          # Install dependencies
+          echo "📦 Installing production dependencies..."
+          npm ci --only=production
+          
+          # Setup environment
+          echo "⚙️ Configuring environment..."
+          if [ ! -f .env.local ]; then
+            cp .env.production .env.local
+            # Update with actual domain and port
+            sed -i "s/yourdomain.com/$DOMAIN/g" .env.local
+            sed -i "s/PORT=3001/PORT=$PORT/g" .env.local
+            sed -i "s/NODE_ENV=development/NODE_ENV=production/g" .env.local
+            echo "✅ Created .env.local with production settings"
+          else
+            echo "⚠️ Using existing .env.local"
+          fi
+          
+          # Install PM2 globally if not exists
+          if ! command -v pm2 &> /dev/null; then
+            echo "📦 Installing PM2..."
+            sudo npm install -g pm2
+            pm2 startup || true
+          fi
+          
+          # Stop existing process
+          echo "🛑 Stopping existing application..."
+          pm2 stop $APP_NAME 2>/dev/null || echo "No existing process to stop"
+          pm2 delete $APP_NAME 2>/dev/null || echo "No existing process to delete"
+          
+          # Start application with PM2
+          echo "🚀 Starting application with PM2..."
+          pm2 start ecosystem.config.js --env production
+          pm2 save
+          
+          # Setup nginx config (if nginx is available)
+          if command -v nginx &> /dev/null; then
+            echo "🌐 Configuring nginx..."
+            sudo tee /etc/nginx/sites-available/$APP_NAME > /dev/null <<EOF
+          server {
+              listen 80;
+              server_name $DOMAIN www.$DOMAIN;
+          
+              # Security headers
+              add_header X-Frame-Options "SAMEORIGIN" always;
+              add_header X-XSS-Protection "1; mode=block" always;
+              add_header X-Content-Type-Options "nosniff" always;
+              add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+          
+              # Proxy to Node.js app
+              location / {
+                  proxy_pass http://127.0.0.1:$PORT;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+                  proxy_cache_bypass \$http_upgrade;
+              }
+          
+              # Static assets with caching
+              location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                  proxy_pass http://127.0.0.1:$PORT;
+                  expires 1y;
+                  add_header Cache-Control "public, immutable";
+              }
+          }
+          EOF
+          
+            # Enable site
+            sudo ln -sf /etc/nginx/sites-available/$APP_NAME /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+            echo "✅ Nginx configured for $DOMAIN"
+          fi
+          
+          # Health check
+          echo "🏥 Performing health check..."
+          sleep 5
+          if curl -f http://localhost:$PORT/health >/dev/null 2>&1; then
+            echo "✅ Application is running successfully!"
+            curl -s http://localhost:$PORT/health | jq '.'
+            echo "🌐 Access your app at: http://$DOMAIN"
+          else
+            echo "❌ Health check failed!"
+            echo "🔍 Testing basic connectivity..."
+            curl -I http://localhost:$PORT/ || echo "Basic connection failed"
+            echo "📋 PM2 Status:"
+            pm2 list
+            echo "📝 Recent logs:"
+            pm2 logs $APP_NAME --lines 20
+            exit 1
+          fi
+          
+          # Cleanup old backup
+          rm -rf $APP_DIR/backup 2>/dev/null || true
+          
+          echo "🎉 Deployment completed successfully!"
+          echo "📊 PM2 Status:"
+          pm2 list

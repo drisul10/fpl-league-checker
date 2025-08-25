@@ -1,0 +1,12 @@
+{
+  "name": "fpl-rules-checker-static",
+  "version": "1.0.0",
+  "description": "Static version - Fantasy Premier League Rules Checker",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve ."
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

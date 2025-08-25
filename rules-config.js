@@ -7,7 +7,7 @@
 module.exports = {
     // League settings
     league: {
-        id: 1806705,        // Your league ID
+        id: 436453,        // Your league ID
         gameweek: 2,        // Current gameweek to check
         maxTeamsToCheck: null // Number of teams to check (null = all teams)
     },

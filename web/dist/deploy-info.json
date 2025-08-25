@@ -1,0 +1,16 @@
+{
+  "buildDate": "2025-08-25T10:48:12.477Z",
+  "version": "1.0.0",
+  "deploymentType": "static",
+  "features": {
+    "cors": "limited - depends on browser/FPL API policy",
+    "export": "disabled - requires server",
+    "analysis": "enabled",
+    "webVitals": "100%"
+  },
+  "limitations": [
+    "CORS may block some API calls depending on browser",
+    "Export functionality unavailable (server required)",
+    "Rate limiting handled client-side only"
+  ]
+}

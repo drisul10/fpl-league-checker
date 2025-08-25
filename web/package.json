@@ -1,0 +1,26 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "A responsive web application to check Fantasy Premier League teams for Arsenal player compliance.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node proxy-server.js",
+    "dev": "NODE_ENV=development node proxy-server.js",
+    "prod": "NODE_ENV=production node proxy-server.js",
+    "build:static": "node scripts/build-static.js",
+    "audit": "lighthouse http://localhost:3001 --output json --output html --output-path ./reports/audit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "express-slow-down": "^2.0.1",
+    "dotenv": "^16.3.1"
+  }
+}

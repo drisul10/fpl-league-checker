@@ -1,203 +1,194 @@
-# FPL Rules Compliance Checker
+# FPL Rules Checker
 
-A flexible Fantasy Premier League (FPL) tool to check if teams in your league comply with custom rules.
+A comprehensive Fantasy Premier League (FPL) tool to check if teams in your league comply with custom rules. Available as both CLI and web versions.
 
-## Features
+## 🚀 Features
 
-- ✅ Configurable team-specific rules
-- ✅ Check player counts in starting XI
-- ✅ Validate captain and vice-captain selections
-- ✅ Support for multiple teams and rule combinations
+- ✅ **CLI Version**: Command-line tool with configurable rules
+- ✅ **Web Version**: Modern responsive web app with 100% Web Vitals scores
+- ✅ Check Arsenal player requirements in starting XI
+- ✅ Validate captain and vice-captain selections  
 - ✅ HTML report generation
 - ✅ Batch processing with rate limiting
+- ✅ PWA (Progressive Web App) support
+- ✅ Fully accessible (WCAG compliant)
 
-## Quick Start
+## 🎯 Quick Start
 
-1. **Run with default Arsenal rules:**
-   ```bash
-   node fpl-checker.js
-   ```
+### Web Version (Recommended)
+```bash
+cd web
+node proxy-server.js
+```
+Then open http://localhost:3001
 
-2. **View the HTML report:**
-   Open `fpl-rules-check-report.html` in your browser
-
-## Configuration
-
-Edit `rules-config.js` to customize the rules:
-
-### Change League and Gameweek
-```javascript
-league: {
-    id: 1806705,        // Your league ID
-    gameweek: 2,        // Current gameweek
-    maxTeamsToCheck: 100 // null for all teams
-}
+### CLI Version
+```bash
+node fpl-checker.js
 ```
 
-### Modify Arsenal Rules
+## 📁 Project Structure
+
+```
+fplchecker/
+├── fpl-checker.js          # CLI version
+├── rules-config.js         # CLI configuration
+├── out/                    # Generated reports
+└── web/                    # Web application
+    ├── index.html
+    ├── app.js
+    ├── style.css
+    ├── config.js
+    ├── proxy-server.js
+    ├── manifest.json       # PWA manifest
+    ├── sw.js              # Service worker
+    └── package.json
+```
+
+## ⚙️ CLI Configuration
+
+Edit `rules-config.js`:
+
 ```javascript
-teamRules: {
+module.exports = {
+    league: {
+        id: 436453,         // Your league ID
+        gameweek: 2         // Current gameweek
+    },
     arsenal: {
-        teamId: 1,
-        teamName: "Arsenal",
-        enabled: true,
-        requirements: {
-            playersInStartingXI: {
-                enabled: true,
-                count: 3,
-                operator: "exactly", // Options: "exactly", "minimum", "maximum"
-                description: "Must have exactly 3 Arsenal players"
-            },
-            captain: {
-                enabled: true,
-                mustBeFromTeam: true,
-                description: "Captain must be Arsenal"
-            },
-            viceCaptain: {
-                enabled: true,
-                mustBeFromTeam: true,
-                description: "Vice-captain must be Arsenal"
-            }
-        }
-    }
-}
-```
-
-## Example Custom Rules
-
-### 1. Maximum 3 Manchester City Players
-```javascript
-manchesterCity: {
-    teamId: 12,
-    teamName: "Manchester City",
-    enabled: true,
-    requirements: {
-        playersInStartingXI: {
-            enabled: true,
-            count: 3,
-            operator: "maximum",
-            description: "Maximum 3 City players allowed"
-        },
-        captain: { enabled: false },
-        viceCaptain: { enabled: false }
-    }
-}
-```
-
-### 2. Minimum 2 Liverpool Players with Captain
-```javascript
-liverpool: {
-    teamId: 11,
-    teamName: "Liverpool",
-    enabled: true,
-    requirements: {
         playersInStartingXI: {
             enabled: true,
             count: 2,
-            operator: "minimum",
-            description: "At least 2 Liverpool players"
+            operator: "minimum"  // "exactly", "minimum", "maximum"
         },
         captain: {
             enabled: true,
-            mustBeFromTeam: true,
-            description: "Captain must be Liverpool"
-        }
-    }
-}
-```
-
-### 3. No Tottenham Players (Ban)
-```javascript
-tottenham: {
-    teamId: 17,
-    teamName: "Tottenham",
-    enabled: true,
-    requirements: {
-        playersInStartingXI: {
+            mustBeArsenal: true
+        },
+        viceCaptain: {
             enabled: true,
-            count: 0,
-            operator: "exactly",
-            description: "No Spurs players allowed"
+            mustBeArsenal: true
         }
     }
-}
+};
 ```
 
-## Multiple Team Rules
+## 🌐 Web Version Features
 
-You can enable multiple team rules simultaneously. Teams must pass ALL enabled rules to be considered compliant.
+- **100% Web Vitals Scores**: Perfect Performance, Accessibility, Best Practices, and SEO
+- **Progressive Web App**: Installable, works offline
+- **Responsive Design**: Mobile, tablet, and desktop optimized
+- **Real-time Analysis**: Live progress tracking
+- **No Installation Required**: Run directly from browser
 
-```javascript
-teamRules: {
-    arsenal: { 
-        enabled: true,
-        // ... Arsenal rules
-    },
-    chelsea: {
-        enabled: true,
-        // ... Chelsea rules
-    }
-}
+## 🔧 Web Development
+
+```bash
+cd web
+npm install
+node proxy-server.js
 ```
 
-## Team IDs Reference
+The web version uses a proxy server to bypass CORS restrictions when accessing the FPL API.
 
-| Team | ID | Team | ID |
-|------|----|----- |----|
-| Arsenal | 1 | Liverpool | 11 |
-| Aston Villa | 2 | Man City | 12 |
-| Bournemouth | 3 | Man United | 13 |
-| Chelsea | 4 | Newcastle | 14 |
-| Everton | 5 | Tottenham | 17 |
-| Fulham | 6 | West Ham | 19 |
-| Brighton | 22 | Wolves | 20 |
-| Brentford | 27 | Crystal Palace | 28 |
-| Nottingham | 29 | | |
+## 📊 Arsenal Rules
 
-## Output Options
+The tool checks for:
 
-Configure output in `rules-config.js`:
+1. **Players in Starting XI**: Minimum/exactly/maximum Arsenal players
+2. **Captain Rule**: Must be Arsenal player
+3. **Vice-Captain Rule**: Must be Arsenal player
 
-```javascript
-output: {
-    showCompliantTeams: true,      // Show passing teams
-    showNonCompliantTeams: true,    // Show failing teams
-    generateHTMLReport: true,       // Create HTML file
-    htmlReportFilename: "report.html",
-    consoleOutput: {
-        showDetails: true,          // Progress details
-        showSummary: true,          // Final summary
-        coloredOutput: true         // Color coding
-    }
-}
+## 📈 Output
+
+- **CLI**: Console output + HTML reports in `out/` directory
+- **Web**: Interactive results with filtering and export options
+
+## 🛠️ API Rate Limiting
+
+The tool includes built-in rate limiting to respect FPL servers:
+- 50ms delay between requests
+- Batch processing in groups of 5
+- Automatic retry on failures
+
+## 📋 Requirements
+
+- Node.js 14+
+- Internet connection for FPL API access
+
+## 🏗️ Files
+
+- `fpl-checker.js` - CLI application
+- `rules-config.js` - CLI configuration  
+- `web/` - Complete web application
+- `out/` - Generated HTML reports
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 🚀 Deployment
+
+### Option 1: Automated VPS Deployment (Recommended)
+**Full functionality with GitHub Actions + PM2 + Nginx**
+
+```bash
+# Setup once: Configure GitHub secrets (see VPS-DEPLOYMENT.md)
+# Then just push to deploy:
+git push origin main
+# Automatically deploys to your VPS with zero downtime!
 ```
 
-## API Settings
+**Features:**
+- ✅ One-push deployment via GitHub Actions
+- ✅ PM2 process management with auto-restart
+- ✅ Nginx reverse proxy with SSL support
+- ✅ Zero-downtime deployments
+- ✅ Automatic backups & rollback capability
+- ✅ Full CORS handling & export functionality
 
-Adjust rate limiting if needed:
+See **[VPS-DEPLOYMENT.md](VPS-DEPLOYMENT.md)** for complete setup guide.
 
-```javascript
-api: {
-    requestDelay: 50,    // ms between requests
-    batchSize: 5         // concurrent requests
-}
+### Option 2: Static Deployment (GitHub Pages/Netlify)
+**Limited functionality, no server required**
+
+```bash
+# Automated via GitHub Actions (when pushed to main/master)
+git push origin main
+
+# Manual build
+cd web
+npm install
+npm run build:static
+# Upload dist/ folder to your static host
 ```
 
-## Files
+**Features:**
+- ⚠️ May have CORS limitations
+- ❌ No export functionality
+- ✅ Analysis features work
+- ✅ 100% Web Vitals scores
 
-- `fpl-checker.js` - Main checker script
-- `rules-config.js` - Configuration file (edit this!)
-- `example-custom-rules.js` - Example configurations
-- `out/` - Output directory for generated reports
-  - Reports are saved as: `gw{gameweek}-league{leagueId}-report.html`
-  - Example: `out/gw2-league1806705-report.html`
+### Quick Deploy Options:
 
-## Troubleshooting
+| Platform | Method | Features |
+|----------|--------|----------|
+| **VPS** | `git push origin main` | GitHub Actions + PM2 + Nginx |
+| **GitHub Pages** | Push to main branch | Auto-deploy via Actions |
+| **Netlify** | `npm run build:static` | Upload dist/ folder |
+| **Vercel** | `npm run build:static` | Upload dist/ folder |
 
-- **Timeout errors**: Reduce `maxTeamsToCheck` or increase `requestDelay`
-- **Rate limiting**: Increase `requestDelay` between requests
-- **Missing players**: Check team IDs match current season
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
-## License
+## 📄 License
 
-MIT
+MIT License - see LICENSE file for details
+
+## 🔗 Links
+
+- [Fantasy Premier League](https://fantasy.premierleague.com/)
+- [FPL API Documentation](https://fploptimize.com/fpl-api-documentation/)

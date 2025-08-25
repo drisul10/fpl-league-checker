@@ -1,17 +1,103 @@
-# Output files
+# Output files and generated reports
 out/
 *.html
+*.report.json
 
-# Node modules (if you add dependencies later)
+# Node modules
 node_modules/
+web/node_modules/
 
-# OS files
+# Dependencies
+package-lock.json
+web/package-lock.json
+
+# Environment files - actual secrets
+.env.local
+web/.env.local
+
+# Environment templates - safe to commit
+# .env (template)
+# .env.production (template)
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# IDE files
+# IDE and editor files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # Logs
 *.log
+logs/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Temporary files
+tmp/
+temp/
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Lighthouse audit files
+*audit*.json
+*audit*.html
+lighthouse-report.*
+accessibility-*
+perfect-audit/
+reports/
+
+# Web specific ignores
+web/*.report.html
+web/*.report.json
+web/lighthouse-*
+web/accessibility-*
+web/perfect-audit/
+web/reports/
+
+# Configuration backups
+rules-config.backup.js
+
+# Deployment artifacts
+web/dist/
+web/reports/
+deploy-info.json
+
+# Build artifacts
+*.tgz
+build/
+
+# SEO files (generated dynamically)
+web/robots.txt
+web/sitemap.xml
