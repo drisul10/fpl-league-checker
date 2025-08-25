@@ -217,7 +217,7 @@ class FPLAnalyzer {
         
         // Cap at 40s for fairness, then reset to 5s
         if (this.currentRetryDelay > 40000) {
-            console.log(`⚖️ Fairness reset: Reached 40s limit, resetting to 5s for next round`);
+            console.log(`⚖️ Fairness reset: Reached 40s limit, resetting to 5s for next attempt`);
             this.currentRetryDelay = this.baseRetryDelay; // Reset to 5s
             this.pauseRound = 1; // Reset round counter
         }
@@ -277,15 +277,15 @@ class FPLAnalyzer {
             const failedCount = this.failedTeams.length;
             const nextDelay = this.calculateNextDelay();
             
-            console.log(`🚨 PAUSE ROUND ${retryRound}: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential doubling)`);
+            console.log(`🚨 PAUSE: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential doubling)`);
             
-            this.ui.updateProgress(50, `⏸️ Pause round ${retryRound}: Waiting ${nextDelay/1000}s for API cooldown (${completedTeams}/${totalTeams} completed)...`);
+            this.ui.updateProgress(50, `⏸️ Pause: Waiting ${nextDelay/1000}s for API cooldown (${completedTeams}/${totalTeams} completed)...`);
             
             // Exponential backoff pause: 5s, 10s, 20s, 40s, 80s...
             await new Promise(resolve => setTimeout(resolve, nextDelay));
             
             // Retry ALL failed teams - keep retrying until they ALL succeed
-            this.ui.updateProgress(55, `🔄 Round ${retryRound}: Retrying ${failedCount} failed teams...`);
+            this.ui.updateProgress(55, `🔄 Retrying ${failedCount} failed teams...`);
             
             const beforeRetryCount = this.failedTeams.length;
             const retryResults = await this.retryFailedTeams(config);
@@ -295,13 +295,13 @@ class FPLAnalyzer {
             results.push(...retryResults);
             totalRetrySuccesses += succeededCount;
             
-            console.log(`✅ Retry round ${retryRound} complete: ${succeededCount}/${beforeRetryCount} teams succeeded. ${afterRetryCount} still failing.`);
+            console.log(`✅ Retry complete: ${succeededCount}/${beforeRetryCount} teams succeeded. ${afterRetryCount} still failing.`);
             
             retryRound++;
             
             // Safety check to prevent infinite loops (though we'll keep trying)
             if (retryRound > 20) {
-                console.warn(`⚠️ 20 retry rounds completed. ${this.failedTeams.length} teams still failing. Continuing...`);
+                console.warn(`⚠️ 20 retries completed. ${this.failedTeams.length} teams still failing. Continuing...`);
             }
         }
         
