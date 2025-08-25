@@ -29,7 +29,6 @@ jobs:
         # Create deployment archive excluding dev files
         tar --exclude='node_modules' \
             --exclude='reports' \
-            --exclude='dist' \
             --exclude='.env.local' \
             --exclude='*.log' \
             -czf ../fpl-app.tar.gz .
