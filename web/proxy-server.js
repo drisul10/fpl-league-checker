@@ -160,6 +160,27 @@ const validateLeagueId = (req, res, next) => {
     next();
 };
 
+// Team data cache (3 hours)
+const teamCache = new Map();
+const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+
+// Cache cleanup every hour
+setInterval(() => {
+    const now = Date.now();
+    let removedCount = 0;
+    
+    for (const [key, value] of teamCache.entries()) {
+        if (now - value.timestamp >= CACHE_DURATION) {
+            teamCache.delete(key);
+            removedCount++;
+        }
+    }
+    
+    if (removedCount > 0 && LOGGING.enableRequestLogging && !isProduction) {
+        console.log(`🧹 Cache cleanup: Removed ${removedCount} expired entries. Active cache size: ${teamCache.size}`);
+    }
+}, 60 * 60 * 1000); // Run every hour
+
 // Path validation for FPL API
 const validateFPLPath = (req, res, next) => {
     const allowedPaths = [
@@ -187,6 +208,33 @@ app.get('/api/fpl/*', validateFPLPath, (req, res) => {
     const queryString = req.url.split('?')[1];
     const fullPath = queryString ? `${fplPath}?${queryString}` : fplPath;
     
+    // Check if this is a team picks endpoint that can be cached
+    const teamPicksMatch = fplPath.match(/^\/api\/entry\/(\d+)\/event\/(\d+)\/picks\/$/);
+    
+    if (teamPicksMatch) {
+        const [, teamId, gameweek] = teamPicksMatch;
+        const cacheKey = `team_${teamId}_gw_${gameweek}`;
+        
+        // Check cache first
+        const cached = teamCache.get(cacheKey);
+        if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+            if (LOGGING.enableRequestLogging && !isProduction) {
+                console.log(`📦 Cache HIT: ${cacheKey}`);
+            }
+            
+            // Return cached data immediately with no delay
+            res.status(cached.status);
+            Object.keys(cached.headers).forEach(key => {
+                res.set(key, cached.headers[key]);
+            });
+            return res.json(cached.data);
+        }
+        
+        if (LOGGING.enableRequestLogging && !isProduction) {
+            console.log(`🌐 Cache MISS: ${cacheKey} - Fetching from FPL API`);
+        }
+    }
+    
     // Configurable request logging
     if (LOGGING.enableRequestLogging && !isProduction) {
         console.log(`Proxying: ${fullPath}`);
@@ -207,7 +255,46 @@ app.get('/api/fpl/*', validateFPLPath, (req, res) => {
             res.set(key, proxyRes.headers[key]);
         });
         
-        proxyRes.pipe(res);
+        // If this is a team picks endpoint, collect the response for caching
+        if (teamPicksMatch && proxyRes.statusCode === 200) {
+            const [, teamId, gameweek] = teamPicksMatch;
+            const cacheKey = `team_${teamId}_gw_${gameweek}`;
+            
+            let responseData = '';
+            
+            proxyRes.on('data', (chunk) => {
+                responseData += chunk;
+                res.write(chunk);
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const jsonData = JSON.parse(responseData);
+                    
+                    // Cache the successful response
+                    teamCache.set(cacheKey, {
+                        data: jsonData,
+                        status: proxyRes.statusCode,
+                        headers: proxyRes.headers,
+                        timestamp: Date.now()
+                    });
+                    
+                    if (LOGGING.enableRequestLogging && !isProduction) {
+                        console.log(`💾 Cached team ${teamId} GW ${gameweek} for 3 hours`);
+                    }
+                } catch (error) {
+                    // If JSON parsing fails, don't cache
+                    if (LOGGING.enableErrorLogging && !isProduction) {
+                        console.warn(`Failed to parse response for caching: ${error.message}`);
+                    }
+                }
+                
+                res.end();
+            });
+        } else {
+            // For non-cacheable endpoints or failed requests, just pipe normally
+            proxyRes.pipe(res);
+        }
     });
 
     proxyReq.on('error', (err) => {
