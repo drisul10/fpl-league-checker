@@ -187,11 +187,33 @@ class FPLAnalyzer {
     }
     
     /**
-     * Calculate next delay with exponential backoff: 5s, 10s, 15s, 20s...
+     * Clear previous results table on new analysis
+     */
+    clearPreviousResults() {
+        const resultsSection = document.getElementById('resultsSection');
+        if (resultsSection) {
+            resultsSection.style.display = 'none';
+        }
+        
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        if (resultsTableBody) {
+            resultsTableBody.innerHTML = '';
+        }
+        
+        const resultsSummary = document.querySelector('.results-summary');
+        if (resultsSummary) {
+            resultsSummary.remove();
+        }
+        
+        console.log('🧹 Previous results cleared for new analysis');
+    }
+    
+    /**
+     * Calculate next delay with exponential backoff: 5s, 10s, 20s, 40s, 80s...
      */
     calculateNextDelay() {
         this.pauseRound++;
-        this.currentRetryDelay = this.baseRetryDelay * this.pauseRound;
+        this.currentRetryDelay = this.baseRetryDelay * Math.pow(2, this.pauseRound - 1);
         return this.currentRetryDelay;
     }
 
@@ -239,18 +261,19 @@ class FPLAnalyzer {
     /**
      * Process failed teams with exponential backoff until ALL complete
      */
-    async processFailedTeamsUntilComplete(config, results, processedTeams, totalTeams) {
+    async processFailedTeamsUntilComplete(config, results, completedTeams, totalTeams) {
         let retryRound = 1;
+        let totalRetrySuccesses = 0;
         
         while (this.failedTeams.length > 0) {
             const failedCount = this.failedTeams.length;
             const nextDelay = this.calculateNextDelay();
             
-            console.log(`🚨 PAUSE ROUND ${retryRound}: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential backoff)`);
+            console.log(`🚨 PAUSE ROUND ${retryRound}: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential doubling)`);
             
-            this.ui.updateProgress(50, `⏸️ Pause round ${retryRound}: Waiting ${nextDelay/1000}s for API cooldown (${processedTeams}/${totalTeams} processed)...`);
+            this.ui.updateProgress(50, `⏸️ Pause round ${retryRound}: Waiting ${nextDelay/1000}s for API cooldown (${completedTeams}/${totalTeams} completed)...`);
             
-            // Exponential backoff pause: 5s, 10s, 15s, 20s...
+            // Exponential backoff pause: 5s, 10s, 20s, 40s, 80s...
             await new Promise(resolve => setTimeout(resolve, nextDelay));
             
             // Retry ALL failed teams - keep retrying until they ALL succeed
@@ -262,6 +285,7 @@ class FPLAnalyzer {
             const succeededCount = beforeRetryCount - afterRetryCount;
             
             results.push(...retryResults);
+            totalRetrySuccesses += succeededCount;
             
             console.log(`✅ Retry round ${retryRound} complete: ${succeededCount}/${beforeRetryCount} teams succeeded. ${afterRetryCount} still failing.`);
             
@@ -274,6 +298,12 @@ class FPLAnalyzer {
         }
         
         console.log(`🎉 ALL FAILED TEAMS COMPLETED! Resuming normal processing...`);
+        
+        // Reset pause delays for next potential failure
+        this.currentRetryDelay = this.baseRetryDelay; // Reset to 5s
+        this.pauseRound = 0;
+        
+        return totalRetrySuccesses; // Return count of successfully retried teams
     }
 
     /**
@@ -509,7 +539,9 @@ class FPLAnalyzer {
             const batchSize = FPLConfig.api.batchSize;
             
             // Process teams in batches with immediate pause on 429
-            let processedTeams = 0;
+            let attemptedTeams = 0;
+            let completedTeams = 0;
+            
             for (let i = 0; i < teams.length; i += batchSize) {
                 // Reset pause flag for this batch
                 this.shouldPauseImmediately = false;
@@ -524,20 +556,23 @@ class FPLAnalyzer {
                 const batchResults = await Promise.all(batchPromises);
                 const validResults = batchResults.filter(r => r !== null);
                 results.push(...validResults);
-                processedTeams += batch.length;
+                
+                attemptedTeams += batch.length;
+                completedTeams += validResults.length;
                 
                 // Check if we need to pause immediately due to 429 error
                 if (this.shouldPauseImmediately && this.failedTeams.length > 0) {
                     // Process failed teams with exponential backoff until ALL succeed
-                    await this.processFailedTeamsUntilComplete(config, results, processedTeams, teams.length);
+                    const addedResults = await this.processFailedTeamsUntilComplete(config, results, completedTeams, teams.length);
+                    completedTeams += addedResults; // Update completed count with successful retries
                     
                     // Reset pause flag and continue
                     this.shouldPauseImmediately = false;
                 }
                 
-                // Update progress
-                const progress = 30 + Math.floor(processedTeams / teams.length * 60);
-                this.ui.updateProgress(progress, `Processed ${processedTeams}/${teams.length} teams...`);
+                // Update progress based on COMPLETED teams, not just attempted
+                const progress = 30 + Math.floor(completedTeams / teams.length * 60);
+                this.ui.updateProgress(progress, `Completed ${completedTeams}/${teams.length} teams (attempted ${attemptedTeams})...`);
                 
                 // Normal delay between batches (if not paused)
                 if (!this.shouldPauseImmediately && FPLConfig.api.requestDelay > 0 && i + batchSize < teams.length) {
@@ -626,6 +661,10 @@ class FPLAnalyzer {
         }
         
         this.isProcessing = true;
+        
+        // Clear previous results table
+        this.clearPreviousResults();
+        
         this.ui.showProgress();
         
         try {
