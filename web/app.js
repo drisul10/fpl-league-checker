@@ -871,6 +871,7 @@ class UIController {
         const html = this.generateResultsHTML(results, compliant, nonCompliant, config, leagueName, dataUpdatedAt);
         
         this.elements.resultsSection.innerHTML = html;
+        this.elements.resultsSection.style.display = 'block'; // Show results section
         this.bindFilterEvents();
         this.hideProgress();
         this.hideEmptyState();
