@@ -316,16 +316,16 @@ app.post('/api/generate-cache', (req, res) => {
     
     const { spawn } = require('child_process');
     const child = spawn('node', ['fpl-json-export.js', leagueId.toString(), gameweek.toString()], {
-        cwd: __dirname
+        cwd: __dirname,
+        detached: true,
+        stdio: 'ignore'
     });
     
-    child.on('close', (code) => {
-        if (code === 0) {
-            res.json({ success: true });
-        } else {
-            res.json({ success: false });
-        }
-    });
+    // Unref the child process so it can run independently
+    child.unref();
+    
+    // Return immediately without waiting
+    res.json({ success: true, message: 'Generation started in background' });
 });
 
 app.post('/api/export', validateLeagueId, (req, res) => {

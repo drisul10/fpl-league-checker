@@ -636,7 +636,7 @@ class FPLAnalyzer {
             
             if (!cachedData) {
                 // Cache doesn't exist, generate it
-                this.ui.updateProgress(10, 'Generating data...');
+                this.ui.updateProgress(10, 'Generating data (this may take a moment for large leagues)...');
                 try {
                     const response = await fetch('/api/generate-cache', {
                         method: 'POST',
@@ -648,9 +648,19 @@ class FPLAnalyzer {
                     });
                     const result = await response.json();
                     if (result.success) {
-                        // Try loading cache again after generation
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
+                        // Poll for cache file with timeout
+                        let attempts = 0;
+                        const maxAttempts = 30; // 30 seconds max wait
+                        
+                        while (attempts < maxAttempts && !cachedData) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
+                            attempts++;
+                            
+                            if (!cachedData && attempts % 5 === 0) {
+                                this.ui.updateProgress(10 + attempts, `Still generating... (${attempts}s)`);
+                            }
+                        }
                     }
                 } catch (error) {
                     console.log('⚠️ Could not generate cache');
