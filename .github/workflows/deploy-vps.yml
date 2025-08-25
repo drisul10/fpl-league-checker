@@ -21,14 +21,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: web/package-lock.json
 
     # Install and test dependencies
     - name: Install dependencies
       run: |
         cd web
-        npm ci
+        npm install
 
     # Run basic validation
     - name: Validate application
@@ -107,7 +105,7 @@ jobs:
           
           # Install dependencies
           echo "📦 Installing production dependencies..."
-          npm ci --only=production
+          npm install --only=production
           
           # Setup environment
           echo "⚙️ Configuring environment..."
