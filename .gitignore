@@ -1,5 +1,4 @@
 # Output files and generated reports
-out/
 *.report.json
 
 # Node modules

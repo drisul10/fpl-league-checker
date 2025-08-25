@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OXY-FPL Arsenal Supporters Rules Check - GW2</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 15px; 
+            background: linear-gradient(135deg, #ef0107 0%, #063672 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 { 
+            color: #ef0107; 
+            text-align: center;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+        }
+        .rules-box {
+            background: #fff3cd;
+            border-left: 4px solid #ef0107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .rules-box h3 {
+            margin-top: 0;
+            color: #ef0107;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+        }
+        .rules-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .rules-box li {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+        .summary { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 20px 0;
+            text-align: center;
+        }
+        .summary-item {
+            min-width: 120px;
+        }
+        .summary-number {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: bold;
+            color: #333;
+        }
+        .summary-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { 
+            width: 100%; 
+            min-width: 800px;
+            border-collapse: collapse; 
+        }
+        th { 
+            background: #ef0107; 
+            color: white; 
+            padding: 12px 8px; 
+            text-align: left;
+            position: sticky;
+            top: 0;
+            font-size: clamp(0.8rem, 1.8vw, 1rem);
+            white-space: nowrap;
+        }
+        td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #ddd;
+            font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .compliant { 
+            background: #e8f5e9;
+        }
+        .non-compliant { 
+            background: #ffebee;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 12px;
+            font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+        .badge-error {
+            background: #f44336;
+            color: white;
+        }
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+            word-break: break-word;
+        }
+        .player-list {
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            color: #666;
+            margin-top: 3px;
+            word-break: break-word;
+        }
+        h2 {
+            margin-top: 40px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ef0107;
+            font-size: clamp(1.3rem, 3vw, 1.5rem);
+        }
+        .timestamp {
+            text-align: center;
+            color: #999;
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            margin-top: 30px;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .summary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 15px;
+            }
+            .rules-box {
+                padding: 12px;
+                margin: 15px 0;
+            }
+            th, td {
+                padding: 8px 6px;
+            }
+            .badge {
+                font-size: 0.75rem;
+                padding: 2px 4px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+            th, td {
+                padding: 6px 4px;
+            }
+            table {
+                min-width: 700px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ OXY-FPL Arsenal Supporters Rule Checker</h1>
+        <p class="subtitle">Fantasy Premier League - League 436453 - Gameweek 2</p>
+        
+        <div class="rules-box">
+            <h3>📋 Active Rules:</h3>
+            <ul><li>Must have minimum 2 Arsenal players in starting XI</li><li>Captain must be an Arsenal player</li><li>Vice-captain must be an Arsenal player</li>
+            </ul>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item">
+                <div class="summary-number">123</div>
+                <div class="summary-label">Total Teams</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number" style="color: #4caf50;">123</div>
+                <div class="summary-label">Compliant</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number" style="color: #f44336;">0</div>
+                <div class="summary-label">Non-Compliant</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">100%</div>
+                <div class="summary-label">Compliance Rate</div>
+            </div>
+        </div>
+        <h2>✅ Teams Following All Rules (123)</h2>
+        <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Manager</th>
+                    <th>Team Name</th>
+                    <th>Arsenal Players (Starting XI)</th>
+                    <th>Captain</th>
+                    <th>Vice-Captain</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="compliant">
+                    <td><strong>1</strong></td>
+                    <td>61 Maduna</td>
+                    <td><strong>Real Maduna</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Gabriel, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>2</strong></td>
+                    <td>𝗦 𝗢 𝗢 𝗗 𝗔 𝗠</td>
+                    <td><strong>LOCKEY</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>3</strong></td>
+                    <td>kasii minii</td>
+                    <td><strong>Bring MTH Fc</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>4</strong></td>
+                    <td>achmad daffa</td>
+                    <td><strong>D Team</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>5</strong></td>
+                    <td>amic montasiki</td>
+                    <td><strong>arsmic</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">J.Timber, Eze, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>6</strong></td>
+                    <td>San ihsanul</td>
+                    <td><strong>TAKAHIYO FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Gabriel, Eze, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>7</strong></td>
+                    <td>Tantan Dwi Gartika</td>
+                    <td><strong>Mikel and The Gang</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>8</strong></td>
+                    <td>Khamim Tohari</td>
+                    <td><strong>Lost Memory FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Ødegaard, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>9</strong></td>
+                    <td>Nafis Azra</td>
+                    <td><strong>Cabang london</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>9</strong></td>
+                    <td>Faris Teguh</td>
+                    <td><strong>AWFC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saliba, Gabriel</div>
+                    </td>
+                    <td>Saliba 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>11</strong></td>
+                    <td>Muhammad Afif Shibghotulloh</td>
+                    <td><strong>MASGooners</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Rice, Gyökeres</div>
+                    </td>
+                    <td>Rice 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>12</strong></td>
+                    <td>Ryan Ahmad Erlangga</td>
+                    <td><strong>Corona Team</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>13</strong></td>
+                    <td>Yuyus Riri</td>
+                    <td><strong>Arseba Banyuwangi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>13</strong></td>
+                    <td>Dwi Qoerdianto</td>
+                    <td><strong>Dukodu FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Zubimendi, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>15</strong></td>
+                    <td>Wahyu Pamungkas</td>
+                    <td><strong>sgsgeee</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>15</strong></td>
+                    <td>alfian eka</td>
+                    <td><strong>Now you see me</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>17</strong></td>
+                    <td>MSJW ---</td>
+                    <td><strong>Easy Peasy</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>17</strong></td>
+                    <td>Dian FA</td>
+                    <td><strong>Nymeria FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>19</strong></td>
+                    <td>dudung wj</td>
+                    <td><strong>gyoengkres87</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>20</strong></td>
+                    <td>Razi Aziz</td>
+                    <td><strong>herewegyo#14</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>21</strong></td>
+                    <td>Eka Karuniawan</td>
+                    <td><strong>COYG SBY</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Rice, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>22</strong></td>
+                    <td>Mufarrichin Much</td>
+                    <td><strong>NaFas Sakho</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Zubimendi, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>23</strong></td>
+                    <td>Romance De Astriella sanjaya</td>
+                    <td><strong>spesialis juara 2</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>24</strong></td>
+                    <td>Wisnu Prawoto</td>
+                    <td><strong>Pistol Rakitan</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>25</strong></td>
+                    <td>Krisdiansyah S</td>
+                    <td><strong>gf8z</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>26</strong></td>
+                    <td>Adi Permana</td>
+                    <td><strong>FPL Miadi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>27</strong></td>
+                    <td>Gani Sanjaya</td>
+                    <td><strong>AC Sidabowa</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Lewis-Skelly, Saka, Eze, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>27</strong></td>
+                    <td>Fahmi Musyadd</td>
+                    <td><strong>Kala KL</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Rice 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>27</strong></td>
+                    <td>Kemal Kanuril</td>
+                    <td><strong>Highbury Army</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>30</strong></td>
+                    <td>Ridho Nugroho</td>
+                    <td><strong>KINGRAN</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>31</strong></td>
+                    <td>Heru Justin</td>
+                    <td><strong>SQUIDWOODRRR</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Gabriel, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>32</strong></td>
+                    <td>-arief pranata-</td>
+                    <td><strong>Nagi Hikaru</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>32</strong></td>
+                    <td>Faizal Nurohmat</td>
+                    <td><strong>Enerti SC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>32</strong></td>
+                    <td>Bagir Abunumay</td>
+                    <td><strong>AlwaysForward</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>35</strong></td>
+                    <td>Lambang subangkit Abdullah</td>
+                    <td><strong>Percaya Arteta</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Zubimendi, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>35</strong></td>
+                    <td>Indra Ristiawan</td>
+                    <td><strong>DALBAN FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>37</strong></td>
+                    <td>Yonif Mayoma</td>
+                    <td><strong>Bontang FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>38</strong></td>
+                    <td>Veri Setianto</td>
+                    <td><strong>The rottens</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>39</strong></td>
+                    <td>Dofactora Rocky</td>
+                    <td><strong>ROsiCKY</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Zubimendi, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>40</strong></td>
+                    <td>Abe Muza</td>
+                    <td><strong>GoonerMusisi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>40</strong></td>
+                    <td>fadillah alzikra</td>
+                    <td><strong>RunnerUpFc</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Ødegaard, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Ødegaard
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>40</strong></td>
+                    <td>Dandy Praditta</td>
+                    <td><strong>Amplop Undangan</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>40</strong></td>
+                    <td>Rizky Moch Firmansyah</td>
+                    <td><strong>KimDahyun</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>40</strong></td>
+                    <td>Andri Sul</td>
+                    <td><strong>Ultra Arsenalisme</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>45</strong></td>
+                    <td>Al Ayub</td>
+                    <td><strong>Hitam pekat</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Ødegaard, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Ødegaard
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>46</strong></td>
+                    <td>Muhammad Hazim Munshif</td>
+                    <td><strong>kangkung</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>46</strong></td>
+                    <td>Danang FM</td>
+                    <td><strong>Gyökerizz</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>46</strong></td>
+                    <td>Lekap Lekap</td>
+                    <td><strong>pakel_ndes</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>49</strong></td>
+                    <td>roy ken</td>
+                    <td><strong>Unggul FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>50</strong></td>
+                    <td>Hisyam Zachary Ahmad</td>
+                    <td><strong>HISYAMZA</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>50</strong></td>
+                    <td>Oyong Saputra</td>
+                    <td><strong>Tagang Taruih FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Martinelli</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Martinelli
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>52</strong></td>
+                    <td>Mochammad Rahfi</td>
+                    <td><strong>Netflix FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Zubimendi, Rice, Gyökeres</div>
+                    </td>
+                    <td>Zubimendi 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>53</strong></td>
+                    <td>Raden Rachmat</td>
+                    <td><strong>Tim Haji Mamat</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saliba, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>54</strong></td>
+                    <td>arsen Gooners</td>
+                    <td><strong>gyokeres mask</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Zubimendi, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Zubimendi
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>55</strong></td>
+                    <td>razaq abdur</td>
+                    <td><strong>Pandeka Tigo Gunners</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>55</strong></td>
+                    <td>Red Ranger</td>
+                    <td><strong>Makibau FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>57</strong></td>
+                    <td>Reza Adri Ramadhan</td>
+                    <td><strong>iskra</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Zubimendi
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>58</strong></td>
+                    <td>Irfan Aditya HRP</td>
+                    <td><strong>ENOZI City</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>59</strong></td>
+                    <td>Wahyu Eko</td>
+                    <td><strong>Mimin FPL Ars Supp</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Nichols, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>59</strong></td>
+                    <td>Noor Annas K</td>
+                    <td><strong>Arshana FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>61</strong></td>
+                    <td>Bary Febrianto</td>
+                    <td><strong>KeMosNorZubMadGyo FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>62</strong></td>
+                    <td>Dua RO</td>
+                    <td><strong>Shikamaru 04</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Zubimendi
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>63</strong></td>
+                    <td>Ar5enal Pri4d1</td>
+                    <td><strong>Gagal Manninger</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>63</strong></td>
+                    <td>Widho Satriandi</td>
+                    <td><strong>Alexis Sunset</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>65</strong></td>
+                    <td>Mh. Yusuf Rohul Islam</td>
+                    <td><strong>Roka</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saliba, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>66</strong></td>
+                    <td>Mbah Eko</td>
+                    <td><strong>LovePlstne</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Nichols, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>66</strong></td>
+                    <td>Ronnie Herlin</td>
+                    <td><strong>SKB FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>66</strong></td>
+                    <td>Rizki Maulana</td>
+                    <td><strong>Dowmania</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>69</strong></td>
+                    <td>Muhammad Amin Alimuddin</td>
+                    <td><strong>Kok Ngatur FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>70</strong></td>
+                    <td>daniel sianipar</td>
+                    <td><strong>gyokeresFC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>70</strong></td>
+                    <td>sri santoso</td>
+                    <td><strong>Tetep Percaya Proses</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Zubimendi, Madueke, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Zubimendi
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>72</strong></td>
+                    <td>Annisaa Fitri Shabrina</td>
+                    <td><strong>HanSoHee Shabrina</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>72</strong></td>
+                    <td>Natsu Hikari</td>
+                    <td><strong>Asahi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>72</strong></td>
+                    <td>Andriawan Laksono</td>
+                    <td><strong>ARS_FRVR</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Raya, Eze, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>72</strong></td>
+                    <td>wide ssss</td>
+                    <td><strong>Powerpuff Girl</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>76</strong></td>
+                    <td>Ferry Perdana Susanto</td>
+                    <td><strong>Shadow Monarch Arise</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Ødegaard, Eze, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>77</strong></td>
+                    <td>zaidil fikri</td>
+                    <td><strong>GunnersEPL</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Saka, Zubimendi, Eze, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>78</strong></td>
+                    <td>M Sabani</td>
+                    <td><strong>Big Gabi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>79</strong></td>
+                    <td>Ibnu Ras</td>
+                    <td><strong>Rax Team</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>80</strong></td>
+                    <td>wegig B.S</td>
+                    <td><strong>RondoRoyal</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Gabriel, Saka</div>
+                    </td>
+                    <td>Gabriel 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>81</strong></td>
+                    <td>Masdan Bae</td>
+                    <td><strong>Arsyenal</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>82</strong></td>
+                    <td>queen ara</td>
+                    <td><strong>KST Pusat</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>82</strong></td>
+                    <td>Ihsan Armanda</td>
+                    <td><strong>Yellow Submarine</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">J.Timber, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>85</strong></td>
+                    <td>Amrozi Mochammad</td>
+                    <td><strong>afc ojisan</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Havertz</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>87</strong></td>
+                    <td>MF Hamdani</td>
+                    <td><strong>Senja Emirates</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Rice</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>87</strong></td>
+                    <td>Zaldy Roesandiar</td>
+                    <td><strong>Invincible Tsubasa</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>89</strong></td>
+                    <td>Adi Kurniawan</td>
+                    <td><strong>Pelita FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>89</strong></td>
+                    <td>Sandya Indraji</td>
+                    <td><strong>VamozBoys2526</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>91</strong></td>
+                    <td>Nomika Septianto</td>
+                    <td><strong>Wes Wancine FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>91</strong></td>
+                    <td>Latif Herlino</td>
+                    <td><strong>Ayuda Semar</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>93</strong></td>
+                    <td>Agus Setiawan</td>
+                    <td><strong>AFC GemblonG</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>94</strong></td>
+                    <td>Muhammad Fahmi Abdillah</td>
+                    <td><strong>The Mask On</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>95</strong></td>
+                    <td>Reza palevi</td>
+                    <td><strong>MeriamN5</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>96</strong></td>
+                    <td>Yoga Wardana</td>
+                    <td><strong>Es Cincau Juara Enak</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>97</strong></td>
+                    <td>andhika bagus</td>
+                    <td><strong>Mikel Loves Berta</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Rice 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>97</strong></td>
+                    <td>Abba Xhaka</td>
+                    <td><strong>JuaraAtauMikelOut</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>97</strong></td>
+                    <td>Febrian Dwi Putra</td>
+                    <td><strong>Arsen Fathariano</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>100</strong></td>
+                    <td>Guntur Aulia Syawal</td>
+                    <td><strong>Gunny</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>101</strong></td>
+                    <td>Jorry Setyoro</td>
+                    <td><strong>Highbury</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>102</strong></td>
+                    <td>Hadrian Ramadhani</td>
+                    <td><strong>Kroenke_UWCLChampion</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>103</strong></td>
+                    <td>Trisna a®diaπT0</td>
+                    <td><strong>Radiohead</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>103</strong></td>
+                    <td>Rizky Fajri</td>
+                    <td><strong>Seluar koyak fc</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Saka, Eze, Gyökeres, Havertz</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>103</strong></td>
+                    <td>D. Holand</td>
+                    <td><strong>takhemhem</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>103</strong></td>
+                    <td>Arif WWibowo</td>
+                    <td><strong>Arsenal 4 - 1 Leeds</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>107</strong></td>
+                    <td>Wiro Sableng</td>
+                    <td><strong>Nogosari</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saka, Rice, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>108</strong></td>
+                    <td>miftah pandev</td>
+                    <td><strong>MP10</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>109</strong></td>
+                    <td>Kharis MC</td>
+                    <td><strong>GoyoungCoplaw</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Martinelli, Gyökeres</div>
+                    </td>
+                    <td>Gyökeres 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Martinelli
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>110</strong></td>
+                    <td>William Andy</td>
+                    <td><strong>phoenix point</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>111</strong></td>
+                    <td>Kevin Dzaki Fahmi</td>
+                    <td><strong>Bismillah</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Gabriel, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>112</strong></td>
+                    <td>Ponco Widianto</td>
+                    <td><strong>Berkah Jaya Selalu</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Clarke, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>113</strong></td>
+                    <td>Harisuddin Iqbal</td>
+                    <td><strong>The Highbury Legacy</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saliba, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>113</strong></td>
+                    <td>Wisnu Diantoro</td>
+                    <td><strong>kendal pride fc</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Saka, Rice</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Raya
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>115</strong></td>
+                    <td>Gilang Chrisdiantoro</td>
+                    <td><strong>Mash_Oud_Glory</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Zubimendi</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saliba
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>116</strong></td>
+                    <td>Nahdhy A Riza</td>
+                    <td><strong>Metalist Rovers</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>117</strong></td>
+                    <td>febriyan mouhammad</td>
+                    <td><strong>Andai Aku Menjadi</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Ødegaard</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Ødegaard
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>118</strong></td>
+                    <td>rizal aola</td>
+                    <td><strong>MEZCLA FC</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Ødegaard, Zubimendi, Gyökeres</div>
+                    </td>
+                    <td>Zubimendi 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Ødegaard
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>119</strong></td>
+                    <td>dimas panji endarto</td>
+                    <td><strong>Electric Gunners</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>120</strong></td>
+                    <td>ismanto M</td>
+                    <td><strong>Dowman_yowman</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Raya, Gabriel, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gabriel
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>121</strong></td>
+                    <td>Klub Lemu</td>
+                    <td><strong>Klub Lemu</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Saliba, Saka, Rice</div>
+                    </td>
+                    <td>Saliba 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Saka
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>122</strong></td>
+                    <td>Kiagus Aufa Ibrahim</td>
+                    <td><strong>Benji-kun</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Lewis-Skelly, Rice, Saka</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Rice
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>123</strong></td>
+                    <td>Tyo Suprayitno</td>
+                    <td><strong>The Aioshi</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Saliba, Saka, Eze, Ødegaard</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Ødegaard
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>124</strong></td>
+                    <td>GyoZubi Kai</td>
+                    <td><strong>GyoZubiKai</strong></td>
+                    <td>
+                        <span class="badge badge-success">4</span>
+                        <div class="player-list">Eze, Martinelli, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+                <tr class="compliant">
+                    <td><strong>125</strong></td>
+                    <td>ulul azmi</td>
+                    <td><strong>better than never</strong></td>
+                    <td>
+                        <span class="badge badge-success">3</span>
+                        <div class="player-list">Gabriel, Saka, Gyökeres</div>
+                    </td>
+                    <td>Saka 
+                        <span class="badge badge-success">✓</span></td>
+                    <td>Gyökeres
+                        <span class="badge badge-success">✓</span></td>
+                    <td><span class="badge badge-success">COMPLIANT</span></td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="timestamp">Report generated on 8/25/2025, 10:40:02 PM</p>
+    </div>
+</body>
+</html>
