@@ -1,6 +1,5 @@
 # Output files and generated reports
 out/
-*.html
 *.report.json
 
 # Node modules
