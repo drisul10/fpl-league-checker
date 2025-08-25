@@ -149,7 +149,12 @@ class FPLAnalyzer {
      * Process cached data into the expected format for display
      */
     processCachedData(cachedData, config) {
-        if (!cachedData || !cachedData.teams) return [];
+        if (!cachedData || !cachedData.teams) {
+            console.error('No cached data or teams found');
+            return [];
+        }
+        
+        console.log('Processing cached data with config:', config);
         
         return cachedData.teams.map(team => {
             // Convert cached team data to expected format
@@ -174,9 +179,9 @@ class FPLAnalyzer {
             });
             
             // Check rule compliance
-            const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal.playersInStartingXI);
-            const captainPass = !config.arsenal.captain.enabled || !config.arsenal.captain.mustBeArsenal || captainIsArsenal;
-            const viceCaptainPass = !config.arsenal.viceCaptain.enabled || !config.arsenal.viceCaptain.mustBeArsenal || viceCaptainIsArsenal;
+            const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal?.playersInStartingXI || {enabled: false});
+            const captainPass = !config.arsenal?.captain?.enabled || !config.arsenal?.captain?.mustBeArsenal || captainIsArsenal;
+            const viceCaptainPass = !config.arsenal?.viceCaptain?.enabled || !config.arsenal?.viceCaptain?.mustBeArsenal || viceCaptainIsArsenal;
             const allRulesPassed = playerCountPass && captainPass && viceCaptainPass;
             
             return {
@@ -485,7 +490,7 @@ class FPLAnalyzer {
      * Check if player count meets requirements
      */
     checkPlayerCount(count, requirement) {
-        if (!requirement.enabled) return true;
+        if (!requirement || !requirement.enabled) return true;
         
         switch (requirement.operator) {
             case "exactly":
