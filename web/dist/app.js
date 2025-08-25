@@ -11,12 +11,12 @@ class FPLAnalyzer {
         this.teamCache = new Map(); // key: "entryId-gameweek", value: {data, timestamp}
         this.cacheExpiry = 60 * 60 * 1000; // 1 hour in milliseconds
         
-        // Failed request tracking for resilient retry
+        // Failed request tracking for GUARANTEED completion
         this.failedTeams = [];
-        this.retryAttempts = new Map(); // track retry count per team
-        this.maxRetries = 3;
-        this.retryDelay = 5000; // 5 seconds pause before retry
+        this.baseRetryDelay = 5000; // Base: 5 seconds
+        this.currentRetryDelay = 5000; // Current delay (increases exponentially)
         this.shouldPauseImmediately = false; // Flag for immediate pause on 429
+        this.pauseRound = 0; // Track pause rounds for exponential backoff
         
         this.ui = new UIController();
         this.init();
@@ -168,26 +168,31 @@ class FPLAnalyzer {
     }
     
     addFailedTeam(entryId, gameweek, config, error) {
-        const retryKey = this.getRetryKey(entryId, gameweek);
-        const currentAttempts = this.retryAttempts.get(retryKey) || 0;
-        
-        if (currentAttempts < this.maxRetries) {
+        // Check if team is already in failed list (avoid duplicates)
+        const existingFailed = this.failedTeams.find(team => team.entryId === entryId);
+        if (!existingFailed) {
             this.failedTeams.push({ entryId, gameweek, config, error: error.message });
-            this.retryAttempts.set(retryKey, currentAttempts + 1);
-            console.warn(`🚨 IMMEDIATE PAUSE: Team ${entryId} failed (${error.message}), pausing process (attempt ${currentAttempts + 1}/${this.maxRetries})`);
-            
-            // Trigger immediate pause
-            this.shouldPauseImmediately = true;
-            return true; // Will retry
-        } else {
-            console.error(`❌ Team ${entryId} failed permanently after ${this.maxRetries} attempts: ${error.message}`);
-            return false; // Max retries reached
+            console.warn(`🚨 IMMEDIATE PAUSE: Team ${entryId} failed (${error.message}), will keep retrying until success`);
         }
+        
+        // Trigger immediate pause
+        this.shouldPauseImmediately = true;
+        return true; // ALWAYS retry - no limits!
     }
     
     clearFailedTeams() {
         this.failedTeams = [];
-        this.retryAttempts.clear();
+        this.currentRetryDelay = this.baseRetryDelay; // Reset delay
+        this.pauseRound = 0; // Reset pause round
+    }
+    
+    /**
+     * Calculate next delay with exponential backoff: 5s, 10s, 15s, 20s...
+     */
+    calculateNextDelay() {
+        this.pauseRound++;
+        this.currentRetryDelay = this.baseRetryDelay * this.pauseRound;
+        return this.currentRetryDelay;
     }
 
     /**
@@ -229,6 +234,46 @@ class FPLAnalyzer {
         }
         
         return results;
+    }
+    
+    /**
+     * Process failed teams with exponential backoff until ALL complete
+     */
+    async processFailedTeamsUntilComplete(config, results, processedTeams, totalTeams) {
+        let retryRound = 1;
+        
+        while (this.failedTeams.length > 0) {
+            const failedCount = this.failedTeams.length;
+            const nextDelay = this.calculateNextDelay();
+            
+            console.log(`🚨 PAUSE ROUND ${retryRound}: ${failedCount} teams failed. Using ${nextDelay/1000}s delay (exponential backoff)`);
+            
+            this.ui.updateProgress(50, `⏸️ Pause round ${retryRound}: Waiting ${nextDelay/1000}s for API cooldown (${processedTeams}/${totalTeams} processed)...`);
+            
+            // Exponential backoff pause: 5s, 10s, 15s, 20s...
+            await new Promise(resolve => setTimeout(resolve, nextDelay));
+            
+            // Retry ALL failed teams - keep retrying until they ALL succeed
+            this.ui.updateProgress(55, `🔄 Round ${retryRound}: Retrying ${failedCount} failed teams...`);
+            
+            const beforeRetryCount = this.failedTeams.length;
+            const retryResults = await this.retryFailedTeams(config);
+            const afterRetryCount = this.failedTeams.length;
+            const succeededCount = beforeRetryCount - afterRetryCount;
+            
+            results.push(...retryResults);
+            
+            console.log(`✅ Retry round ${retryRound} complete: ${succeededCount}/${beforeRetryCount} teams succeeded. ${afterRetryCount} still failing.`);
+            
+            retryRound++;
+            
+            // Safety check to prevent infinite loops (though we'll keep trying)
+            if (retryRound > 20) {
+                console.warn(`⚠️ 20 retry rounds completed. ${this.failedTeams.length} teams still failing. Continuing...`);
+            }
+        }
+        
+        console.log(`🎉 ALL FAILED TEAMS COMPLETED! Resuming normal processing...`);
     }
 
     /**
@@ -483,20 +528,8 @@ class FPLAnalyzer {
                 
                 // Check if we need to pause immediately due to 429 error
                 if (this.shouldPauseImmediately && this.failedTeams.length > 0) {
-                    const failedCount = this.failedTeams.length;
-                    console.log(`🚨 IMMEDIATE PAUSE triggered! Processed ${processedTeams}/${teams.length} teams, ${failedCount} failed.`);
-                    
-                    this.ui.updateProgress(50, `⏸️ Pausing for ${this.retryDelay/1000}s due to rate limit (${processedTeams}/${teams.length} processed)...`);
-                    
-                    // 5-second pause
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                    
-                    // Retry failed teams immediately
-                    this.ui.updateProgress(55, `🔄 Retrying ${failedCount} failed teams...`);
-                    const retryResults = await this.retryFailedTeams(config);
-                    results.push(...retryResults);
-                    
-                    console.log(`✅ Resumed processing after pause. Failed teams retry: ${retryResults.length}/${failedCount} succeeded.`);
+                    // Process failed teams with exponential backoff until ALL succeed
+                    await this.processFailedTeamsUntilComplete(config, results, processedTeams, teams.length);
                     
                     // Reset pause flag and continue
                     this.shouldPauseImmediately = false;
