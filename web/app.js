@@ -627,15 +627,16 @@ class FPLAnalyzer {
      */
     async processLeague(config) {
         try {
-            this.ui.updateProgress(5, 'Checking for existing data...');
+            // Load master data first (needed for Arsenal players)
+            this.ui.updateProgress(5, 'Loading data...');
+            await this.loadMasterData();
             
-            // Check if cache already exists first
-            const filename = `gw${config.league.gameweek}-league${config.league.id}.json`;
-            const cacheCheckResponse = await fetch(`/out/${filename}`, { method: 'HEAD' });
+            // Try to load from cache immediately
+            let cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
             
-            if (!cacheCheckResponse.ok) {
+            if (!cachedData) {
                 // Cache doesn't exist, generate it
-                this.ui.updateProgress(5, 'Generating fresh data...');
+                this.ui.updateProgress(10, 'Generating data...');
                 try {
                     const response = await fetch('/api/generate-cache', {
                         method: 'POST',
@@ -647,31 +648,19 @@ class FPLAnalyzer {
                     });
                     const result = await response.json();
                     if (result.success) {
-                        console.log('✅ Fresh cache generated successfully');
-                        // Wait a bit for file to be written
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // Try loading cache again after generation
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
                     }
                 } catch (error) {
-                    console.log('⚠️ Could not generate fresh cache, will fallback to API');
+                    console.log('⚠️ Could not generate cache');
                 }
-            } else {
-                console.log('📦 Cache file already exists, skipping generation');
             }
             
-            this.ui.updateProgress(10, 'Loading master data...');
-            
-            // Load master data first (needed for Arsenal players)
-            await this.loadMasterData();
-            
-            this.ui.updateProgress(15, 'Checking for cached data...');
-            
-            // Check for cached JSON data (either fresh or existing)
-            const cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
             if (cachedData) {
-                this.ui.updateProgress(30, 'Processing cached data...');
+                // Cache exists - use it immediately
                 const results = this.processCachedData(cachedData, config);
-                
-                this.ui.updateProgress(100, `🎉 Analysis complete! ${results.length} teams loaded from cache instantly!`);
+                this.ui.updateProgress(100, `🎉 Analysis complete! ${results.length} teams loaded instantly!`);
                 
                 // Set league name from cached data
                 this.leagueName = cachedData.metadata?.leagueName || `League ${config.league.id}`;
