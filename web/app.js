@@ -93,8 +93,19 @@ class FPLAnalyzer {
             const response = await fetch(`/out/${filename}`);
             if (response.ok) {
                 const data = await response.json();
+                
+                // Check if cache is expired (older than 1 hour)
+                if (data.metadata && data.metadata.generatedAt) {
+                    const generatedTime = new Date(data.metadata.generatedAt);
+                    const currentTime = new Date();
+                    const hoursSinceGenerated = (currentTime - generatedTime) / (1000 * 60 * 60);
+                    
+                    if (hoursSinceGenerated > 1) {
+                        return null; // Cache expired
+                    }
+                }
+                
                 return data;
-            } else {
             }
         } catch (error) {
         }
