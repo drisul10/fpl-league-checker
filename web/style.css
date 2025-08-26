@@ -194,6 +194,7 @@ body {
 
 .form-group input,
 .form-group select {
+    width: 100%;
     padding: 12px 16px;
     border: 2px solid var(--border);
     border-radius: 8px;
@@ -202,6 +203,31 @@ body {
     background-color: white;
     transition: all 0.3s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-family: inherit;
+}
+
+/* Custom dropdown arrow for select */
+.form-group select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" viewBox="0 0 12 8" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+/* Number input specific styling */
+.form-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .form-group input:hover,
@@ -342,6 +368,32 @@ body {
     background-color: white;
     transition: all 0.3s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-family: inherit;
+}
+
+/* Custom dropdown arrow for rule select */
+.rule-details select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" viewBox="0 0 12 8" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 10px;
+    padding-right: 28px;
+    cursor: pointer;
+}
+
+/* Number input specific styling for rules */
+.rule-details input[type="number"] {
+    -moz-appearance: textfield;
+    text-align: center;
+}
+
+.rule-details input[type="number"]::-webkit-inner-spin-button,
+.rule-details input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .rule-details select:hover,
