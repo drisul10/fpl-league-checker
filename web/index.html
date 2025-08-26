@@ -96,6 +96,33 @@
                     <fieldset class="rules-section" role="group" aria-labelledby="rules-heading">
                         <legend><h2 id="rules-heading">📋 Arsenal Rules</h2></legend>
                         
+                        <div class="rule-item" role="group" aria-labelledby="squad-rule-label">
+                            <div class="rule-checkbox">
+                                <input type="checkbox" 
+                                       id="squadRule" 
+                                       checked 
+                                       aria-describedby="squad-rule-desc">
+                                <label for="squadRule" id="squad-rule-label">Arsenal Players in Squad</label>
+                            </div>
+                            <div class="rule-details" id="squad-rule-desc">
+                                <label for="squadOperator" class="sr-only">Squad player count requirement type</label>
+                                <select id="squadOperator" aria-label="Squad player count requirement type">
+                                    <option value="minimum">Minimum</option>
+                                    <option value="exactly">Exactly</option>
+                                    <option value="maximum">Maximum</option>
+                                </select>
+                                <label for="squadCount" class="sr-only">Number of Arsenal players required in squad</label>
+                                <input type="number" 
+                                       id="squadCount" 
+                                       value="3" 
+                                       min="0" 
+                                       max="15"
+                                       pattern="[0-9]|1[0-5]"
+                                       title="Enter a number between 0 and 15"
+                                       aria-label="Number of Arsenal players required in squad">
+                            </div>
+                        </div>
+                        
                         <div class="rule-item" role="group" aria-labelledby="players-rule-label">
                             <div class="rule-checkbox">
                                 <input type="checkbox" 

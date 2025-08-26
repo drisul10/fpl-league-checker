@@ -124,7 +124,9 @@ class FPLAnalyzer {
         return cachedData.teams.map(team => {
             // Convert cached team data to expected format
             const arsenalPlayers = this.arsenalPlayers || new Set();
+            let arsenalInSquad = 0;
             let arsenalInStartingXI = 0;
+            let arsenalSquadNames = [];
             let arsenalPlayerNames = [];
             let captainIsArsenal = false;
             let viceCaptainIsArsenal = false;
@@ -132,6 +134,10 @@ class FPLAnalyzer {
             // Analyze picks for rule compliance (safely)
             if (team.picks && Array.isArray(team.picks)) {
                 team.picks.forEach(pick => {
+                    if (arsenalPlayers.has(pick.playerId)) {
+                        arsenalInSquad++;
+                        arsenalSquadNames.push(pick.name);
+                    }
                     if (pick.isStarting && arsenalPlayers.has(pick.playerId)) {
                         arsenalInStartingXI++;
                         arsenalPlayerNames.push(pick.name);
@@ -146,10 +152,11 @@ class FPLAnalyzer {
             }
             
             // Check rule compliance
+            const squadCountPass = this.checkPlayerCount(arsenalInSquad, config.arsenal?.playersInSquad || {enabled: false});
             const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal?.playersInStartingXI || {enabled: false});
             const captainPass = !config.arsenal?.captain?.enabled || !config.arsenal?.captain?.mustBeArsenal || captainIsArsenal;
             const viceCaptainPass = !config.arsenal?.viceCaptain?.enabled || !config.arsenal?.viceCaptain?.mustBeArsenal || viceCaptainIsArsenal;
-            const allRulesPassed = playerCountPass && captainPass && viceCaptainPass;
+            const allRulesPassed = squadCountPass && playerCountPass && captainPass && viceCaptainPass;
             
             return {
                 entry_name: team.teamName,
@@ -158,7 +165,9 @@ class FPLAnalyzer {
                 total: team.totalPoints,
                 rank: team.rank,
                 allRulesPassed: allRulesPassed,
+                arsenalInSquad: arsenalInSquad,
                 arsenalInStartingXI: arsenalInStartingXI,
+                arsenalSquadNames: arsenalSquadNames,
                 arsenalPlayerNames: arsenalPlayerNames,
                 captainName: team.captain?.name || 'Unknown',
                 viceCaptainName: team.viceCaptain?.name || 'Unknown',
@@ -173,6 +182,7 @@ class FPLAnalyzer {
                     isStarting: !!pick.isStarting
                 })),
                 checks: {
+                    squadCount: squadCountPass,
                     playerCount: playerCountPass,
                     captain: captainPass,
                     viceCaptain: viceCaptainPass
@@ -518,7 +528,9 @@ class FPLAnalyzer {
         
         try {
             
+            let arsenalInSquad = 0;
             let arsenalInStartingXI = 0;
+            let arsenalSquadNames = [];
             let arsenalPlayerNames = [];
             let captainIsArsenal = false;
             let viceCaptainIsArsenal = false;
@@ -527,6 +539,12 @@ class FPLAnalyzer {
             
             data.picks.forEach(pick => {
                 const isArsenalPlayer = this.arsenalPlayers.has(pick.element);
+                
+                // Check if Arsenal player in squad (all 15 players)
+                if (isArsenalPlayer) {
+                    arsenalInSquad++;
+                    arsenalSquadNames.push(this.allPlayers[pick.element]?.name || 'Unknown');
+                }
                 
                 // Check if in starting XI (multiplier > 0)
                 if (pick.multiplier > 0 && isArsenalPlayer) {
@@ -548,20 +566,24 @@ class FPLAnalyzer {
             });
             
             // Evaluate Arsenal rules
+            const squadCountPass = this.checkPlayerCount(arsenalInSquad, config.arsenal.playersInSquad);
             const playerCountPass = this.checkPlayerCount(arsenalInStartingXI, config.arsenal.playersInStartingXI);
             const captainPass = !config.arsenal.captain.enabled || !config.arsenal.captain.mustBeArsenal || captainIsArsenal;
             const viceCaptainPass = !config.arsenal.viceCaptain.enabled || !config.arsenal.viceCaptain.mustBeArsenal || viceCaptainIsArsenal;
             
-            const allRulesPassed = playerCountPass && captainPass && viceCaptainPass;
+            const allRulesPassed = squadCountPass && playerCountPass && captainPass && viceCaptainPass;
             
             return {
+                arsenalInSquad,
                 arsenalInStartingXI,
+                arsenalSquadNames,
                 arsenalPlayerNames,
                 captainName,
                 viceCaptainName,
                 captainIsArsenal,
                 viceCaptainIsArsenal,
                 checks: {
+                    squadCount: squadCountPass,
                     playerCount: playerCountPass,
                     captain: captainPass,
                     viceCaptain: viceCaptainPass
@@ -863,6 +885,11 @@ class FPLAnalyzer {
                 gameweek: selectedGameweek
             },
             arsenal: {
+                playersInSquad: {
+                    enabled: document.getElementById('squadRule').checked,
+                    count: parseInt(document.getElementById('squadCount').value),
+                    operator: document.getElementById('squadOperator').value
+                },
                 playersInStartingXI: {
                     enabled: document.getElementById('playersRule').checked,
                     count: parseInt(document.getElementById('playersCount').value),
