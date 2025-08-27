@@ -23,6 +23,7 @@ class FPLAnalyzer {
     init() {
         this.bindEvents();
         this.loadCurrentGameweek();
+        this.loadFromURL();
     }
     
     bindEvents() {
@@ -31,6 +32,214 @@ class FPLAnalyzer {
             this.analyzeLeague();
         });
         
+        // Add share button event listener
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            this.shareURL();
+        });
+        
+        // Add event listeners for form changes to update URL
+        const formElements = [
+            'leagueId', 'gameweekSelect', 'squadRule', 'squadCount', 'squadOperator',
+            'playersRule', 'playersCount', 'playersOperator', 'captainRule', 'viceCaptainRule'
+        ];
+        
+        formElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', () => {
+                    this.updateURL();
+                });
+                element.addEventListener('input', () => {
+                    this.updateURL();
+                });
+            }
+        });
+    }
+    
+    /**
+     * Load form values from URL parameters
+     */
+    loadFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Load league ID
+        const leagueId = urlParams.get('leagueId');
+        if (leagueId) {
+            document.getElementById('leagueId').value = leagueId;
+        }
+        
+        // Load gameweek (will be set after loadCurrentGameweek completes)
+        const gameweek = urlParams.get('gameweek');
+        if (gameweek) {
+            this.urlGameweek = parseInt(gameweek);
+        }
+        
+        // Load squad rule
+        const squadRule = urlParams.get('squadRule');
+        if (squadRule !== null) {
+            document.getElementById('squadRule').checked = squadRule === 'true';
+        }
+        
+        const squadCount = urlParams.get('squadCount');
+        if (squadCount) {
+            document.getElementById('squadCount').value = squadCount;
+        }
+        
+        const squadOperator = urlParams.get('squadOperator');
+        if (squadOperator) {
+            document.getElementById('squadOperator').value = squadOperator;
+        }
+        
+        // Load players rule
+        const playersRule = urlParams.get('playersRule');
+        if (playersRule !== null) {
+            document.getElementById('playersRule').checked = playersRule === 'true';
+        }
+        
+        const playersCount = urlParams.get('playersCount');
+        if (playersCount) {
+            document.getElementById('playersCount').value = playersCount;
+        }
+        
+        const playersOperator = urlParams.get('playersOperator');
+        if (playersOperator) {
+            document.getElementById('playersOperator').value = playersOperator;
+        }
+        
+        // Load captain rule
+        const captainRule = urlParams.get('captainRule');
+        if (captainRule !== null) {
+            document.getElementById('captainRule').checked = captainRule === 'true';
+        }
+        
+        // Load vice captain rule
+        const viceCaptainRule = urlParams.get('viceCaptainRule');
+        if (viceCaptainRule !== null) {
+            document.getElementById('viceCaptainRule').checked = viceCaptainRule === 'true';
+        }
+    }
+    
+    /**
+     * Update URL with current form values
+     */
+    updateURL() {
+        const formData = this.getFormDataForURL();
+        if (formData) {
+            const urlParams = new URLSearchParams();
+            
+            // Only add non-empty values to keep URL clean
+            if (formData.league.id) urlParams.set('leagueId', formData.league.id);
+            if (formData.league.gameweek) urlParams.set('gameweek', formData.league.gameweek);
+            
+            // Squad rules
+            if (formData.arsenal.playersInSquad.enabled) {
+                urlParams.set('squadRule', 'true');
+                urlParams.set('squadCount', formData.arsenal.playersInSquad.count);
+                urlParams.set('squadOperator', formData.arsenal.playersInSquad.operator);
+            }
+            
+            // Players rules
+            if (formData.arsenal.playersInStartingXI.enabled) {
+                urlParams.set('playersRule', 'true');
+                urlParams.set('playersCount', formData.arsenal.playersInStartingXI.count);
+                urlParams.set('playersOperator', formData.arsenal.playersInStartingXI.operator);
+            }
+            
+            // Captain rules
+            if (formData.arsenal.captain.enabled) {
+                urlParams.set('captainRule', 'true');
+            }
+            
+            // Vice captain rules
+            if (formData.arsenal.viceCaptain.enabled) {
+                urlParams.set('viceCaptainRule', 'true');
+            }
+            
+            // Update URL without reloading page
+            const newURL = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newURL);
+        }
+    }
+    
+    /**
+     * Get form data for URL (similar to getFormData but without validation)
+     */
+    getFormDataForURL() {
+        try {
+            const leagueIdInput = document.getElementById('leagueId').value.trim();
+            const leagueId = parseInt(leagueIdInput);
+            const selectedGameweek = parseInt(document.getElementById('gameweekSelect').value);
+            
+            return {
+                league: {
+                    id: isNaN(leagueId) ? null : leagueId,
+                    gameweek: isNaN(selectedGameweek) ? null : selectedGameweek
+                },
+                arsenal: {
+                    playersInSquad: {
+                        enabled: document.getElementById('squadRule').checked,
+                        count: parseInt(document.getElementById('squadCount').value) || 0,
+                        operator: document.getElementById('squadOperator').value || 'minimum'
+                    },
+                    playersInStartingXI: {
+                        enabled: document.getElementById('playersRule').checked,
+                        count: parseInt(document.getElementById('playersCount').value) || 0,
+                        operator: document.getElementById('playersOperator').value || 'minimum'
+                    },
+                    captain: {
+                        enabled: document.getElementById('captainRule').checked,
+                        mustBeArsenal: true
+                    },
+                    viceCaptain: {
+                        enabled: document.getElementById('viceCaptainRule').checked,
+                        mustBeArsenal: true
+                    }
+                }
+            };
+        } catch (error) {
+            return null;
+        }
+    }
+    
+    /**
+     * Share current configuration via URL
+     */
+    async shareURL() {
+        // Update URL first to ensure it's current
+        this.updateURL();
+        
+        const shareBtn = document.getElementById('shareBtn');
+        const originalText = shareBtn.innerHTML;
+        
+        try {
+            // Copy to clipboard
+            await navigator.clipboard.writeText(window.location.href);
+            
+            // Show success feedback
+            shareBtn.innerHTML = '<span aria-hidden="true">✅</span> URL Copied!';
+            shareBtn.style.background = '#28a745';
+            shareBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                shareBtn.innerHTML = originalText;
+                shareBtn.style.background = '';
+                shareBtn.style.color = '';
+            }, 2500);
+            
+        } catch (error) {
+            console.error('Error copying URL:', error);
+            
+            // Show error feedback
+            shareBtn.innerHTML = '<span aria-hidden="true">❌</span> Copy Failed';
+            shareBtn.style.background = '#dc3545';
+            shareBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                shareBtn.innerHTML = originalText;
+                shareBtn.style.background = '';
+                shareBtn.style.color = '';
+            }, 2500);
+        }
     }
     
     /**
@@ -47,8 +256,9 @@ class FPLAnalyzer {
                 option.value = gw;
                 option.textContent = `Gameweek ${gw}`;
                 
-                // Mark current gameweek as selected
-                if (gw === currentGameweek) {
+                // Check if this gameweek should be selected from URL or default to current
+                const shouldSelect = this.urlGameweek ? (gw === this.urlGameweek) : (gw === currentGameweek);
+                if (shouldSelect) {
                     option.selected = true;
                 }
                 
@@ -56,12 +266,16 @@ class FPLAnalyzer {
             }
         } else {
             // Fallback if no events data
+            const selectedGameweek = this.urlGameweek || currentGameweek || 1;
             const option = document.createElement('option');
-            option.value = currentGameweek || 1;
-            option.textContent = `Gameweek ${currentGameweek || 1}`;
+            option.value = selectedGameweek;
+            option.textContent = `Gameweek ${selectedGameweek}`;
             option.selected = true;
             select.appendChild(option);
         }
+        
+        // Clear the URL gameweek after using it
+        delete this.urlGameweek;
     }
 
     /**
@@ -768,6 +982,9 @@ class FPLAnalyzer {
         
         const formData = this.getFormData();
         if (!formData) return;
+        
+        // Update URL with current form data
+        this.updateURL();
         
         // Collapse sidebar on mobile when starting analysis
         if (window.innerWidth <= 1023) {
