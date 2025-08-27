@@ -842,34 +842,57 @@ class FPLAnalyzer {
             let cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
             
             if (!cachedData) {
-                // Cache doesn't exist, generate it
-                this.ui.updateProgress(10, 'Generating data (this may take a moment for large leagues)...');
-                try {
-                    const response = await fetch('/api/generate-cache', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            leagueId: config.league.id, 
-                            gameweek: config.league.gameweek 
-                        })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        // Poll for cache file with timeout
-                        let attempts = 0;
-                        const maxAttempts = 30; // 30 seconds max wait
-                        
-                        while (attempts < maxAttempts && !cachedData) {
-                            await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds instead of 1
-                            cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
-                            attempts++;
-                            
-                            if (!cachedData && attempts % 3 === 0) { // Update progress every 6 seconds
-                                this.ui.updateProgress(10 + (attempts * 2), `Still generating... (${attempts * 2}s)`);
-                            }
-                        }
+                // Cache doesn't exist, start smart polling with fallback generation
+                this.ui.updateProgress(10, 'Checking for existing data...');
+                
+                let attempts = 0;
+                const checkInterval = 6; // Check every 6 seconds (6, 12, 18, 24, 30...)
+                const maxAttempts = 10; // 60 seconds total (10 × 6 seconds)
+                let generationTriggered = false;
+                
+                while (attempts < maxAttempts && !cachedData) {
+                    // Wait for the check interval
+                    await new Promise(resolve => setTimeout(resolve, checkInterval * 1000));
+                    attempts++;
+                    
+                    const currentTime = attempts * checkInterval;
+                    this.ui.updateProgress(10 + (attempts * 8), `Checking for data... (${currentTime}s)`);
+                    
+                    // Check for existing cache file
+                    cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
+                    
+                    if (cachedData) {
+                        // Found existing cache, use it
+                        this.ui.updateProgress(90, `Found existing data! Loading...`);
+                        break;
                     }
-                } catch (error) {
+                    
+                    // If not found and we haven't triggered generation yet, trigger it now
+                    if (!generationTriggered) {
+                        this.ui.updateProgress(10 + (attempts * 8), `No existing data found. Generating new data...`);
+                        
+                        try {
+                            const response = await fetch('/api/generate-cache', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    leagueId: config.league.id, 
+                                    gameweek: config.league.gameweek 
+                                })
+                            });
+                            const result = await response.json();
+                            generationTriggered = true;
+                            
+                            if (result.success) {
+                                this.ui.updateProgress(20 + (attempts * 8), `Generation started... waiting for completion...`);
+                            }
+                        } catch (error) {
+                            console.error('Failed to trigger generation:', error);
+                        }
+                    } else {
+                        // Generation already triggered, just waiting
+                        this.ui.updateProgress(20 + (attempts * 8), `Generating data... (${currentTime}s)`);
+                    }
                 }
             }
             
