@@ -874,12 +874,15 @@ class FPLAnalyzer {
             }
             
             if (cachedData) {
-                // Cache exists - use it immediately
+                // Cache exists - use it with smooth transition
                 const results = this.processCachedData(cachedData, config);
                 this.ui.updateProgress(100, `🎉 Analysis complete! ${results.length} teams loaded instantly!`);
                 
                 // Set league name from cached data
                 this.leagueName = cachedData.metadata?.leagueName || `League ${config.league.id}`;
+                
+                // Add smooth delay before showing results
+                await new Promise(resolve => setTimeout(resolve, 1200));
                 
                 // Display results
                 this.ui.displayResults(results, config, this.leagueName, `Data from cache (${cachedData.metadata?.generatedAt ? new Date(cachedData.metadata.generatedAt).toLocaleString() : 'Unknown time'})`);
@@ -952,7 +955,8 @@ class FPLAnalyzer {
             
             this.ui.updateProgress(100, finalMessage);
             
-            // Log final stats
+            // Add smooth delay before showing results
+            await new Promise(resolve => setTimeout(resolve, 1200));
             
             // Display results
             this.ui.displayResults(results, config, this.leagueName, this.dataUpdatedAt);
