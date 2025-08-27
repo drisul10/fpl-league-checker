@@ -112,6 +112,46 @@ app.use(express.static('.', {
 // Serve cached JSON files from out directory as static files
 app.use('/out', express.static('./out'));
 
+// API endpoint to list cache files matching a pattern
+app.get('/api/cache-files', (req, res) => {
+    try {
+        const pattern = req.query.pattern;
+        if (!pattern) {
+            return res.status(400).json({ error: 'Pattern parameter is required' });
+        }
+        
+        // Convert pattern to regex (e.g., gw2-league123-* becomes gw2-league123-\d+)
+        const regexPattern = pattern.replace('*', '\\d+');
+        const regex = new RegExp(regexPattern);
+        
+        const outDir = path.join(__dirname, 'out');
+        if (!fs.existsSync(outDir)) {
+            return res.json([]);
+        }
+        
+        const files = fs.readdirSync(outDir)
+            .filter(f => regex.test(f))
+            .map(f => {
+                // Extract timestamp from filename
+                const match = f.match(/gw\d+-league\d+-(\d+)\.json/);
+                return {
+                    filename: f,
+                    timestamp: match ? parseInt(match[1]) : 0
+                };
+            })
+            .sort((a, b) => b.timestamp - a.timestamp) // Sort by timestamp, newest first
+            .slice(0, 10) // Return max 10 most recent
+            .map(f => f.filename);
+            
+        res.json(files);
+    } catch (error) {
+        if (LOGGING.enableErrorLogging && !isProduction) {
+            console.error('Error listing cache files:', error);
+        }
+        res.status(500).json({ error: 'Failed to list cache files' });
+    }
+});
+
 // Secure JSON parsing with size limits
 app.use(express.json({ 
     limit: REQUEST_CONFIG.sizeLimit,
@@ -181,6 +221,60 @@ setInterval(() => {
     
     if (removedCount > 0 && LOGGING.enableRequestLogging && !isProduction) {
         console.log(`🧹 Cache cleanup: Removed ${removedCount} expired entries. Active cache size: ${teamCache.size}`);
+    }
+}, 60 * 60 * 1000); // Run every hour
+
+// Cleanup old JSON cache files every hour
+setInterval(() => {
+    try {
+        const outDir = path.join(__dirname, 'out');
+        if (!fs.existsSync(outDir)) return;
+        
+        const files = fs.readdirSync(outDir);
+        const now = Date.now();
+        const oneHourAgo = now - (60 * 60 * 1000);
+        
+        // Group files by league/gameweek
+        const fileGroups = {};
+        files.forEach(file => {
+            const match = file.match(/gw(\d+)-league(\d+)-(\d+)\.json/);
+            if (match) {
+                const [, gw, league, timestamp] = match;
+                const key = `gw${gw}-league${league}`;
+                if (!fileGroups[key]) fileGroups[key] = [];
+                fileGroups[key].push({ 
+                    file, 
+                    timestamp: parseInt(timestamp) 
+                });
+            }
+        });
+        
+        // Keep only latest 2 files per group, delete older ones
+        let deletedCount = 0;
+        Object.entries(fileGroups).forEach(([key, group]) => {
+            // Sort by timestamp, newest first
+            group.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Keep latest 2 files, delete the rest if they're expired
+            group.slice(2).forEach(({ file, timestamp }) => {
+                if (timestamp < oneHourAgo) {
+                    const filePath = path.join(outDir, file);
+                    fs.unlinkSync(filePath);
+                    deletedCount++;
+                    if (LOGGING.enableRequestLogging && !isProduction) {
+                        console.log(`🗑️ Deleted old cache: ${file}`);
+                    }
+                }
+            });
+        });
+        
+        if (deletedCount > 0 && LOGGING.enableRequestLogging && !isProduction) {
+            console.log(`🧹 JSON cache cleanup: Deleted ${deletedCount} old files`);
+        }
+    } catch (error) {
+        if (LOGGING.enableErrorLogging && !isProduction) {
+            console.error('Error cleaning up cache files:', error);
+        }
     }
 }, 60 * 60 * 1000); // Run every hour
 

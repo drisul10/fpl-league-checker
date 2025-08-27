@@ -208,7 +208,8 @@ async function main() {
             fs.mkdirSync(outputDir, { recursive: true });
         }
         
-        const filename = `gw${GAMEWEEK}-league${LEAGUE_ID}.json`;
+        const timestamp = Date.now();
+        const filename = `gw${GAMEWEEK}-league${LEAGUE_ID}-${timestamp}.json`;
         const fullPath = `${outputDir}/${filename}`;
         
         const jsonData = generateJSONReport(results);

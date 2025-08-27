@@ -85,31 +85,50 @@ class FPLAnalyzer {
     }
 
     /**
-     * Check for cached JSON data file
+     * Check for cached JSON data file with timestamp
      */
     async checkForCachedData(leagueId, gameweek) {
         try {
-            const filename = `gw${gameweek}-league${leagueId}.json`;
-            const response = await fetch(`/out/${filename}`);
-            if (response.ok) {
-                const data = await response.json();
-                
-                // Check if cache is expired (older than 1 hour)
-                if (data.metadata && data.metadata.generatedAt) {
-                    const generatedTime = new Date(data.metadata.generatedAt);
-                    const currentTime = new Date();
-                    const hoursSinceGenerated = (currentTime - generatedTime) / (1000 * 60 * 60);
+            // Request list of matching cache files from server
+            const pattern = `gw${gameweek}-league${leagueId}-*`;
+            const response = await fetch(`/api/cache-files?pattern=${encodeURIComponent(pattern)}`);
+            
+            if (!response.ok) {
+                return null;
+            }
+            
+            const files = await response.json();
+            
+            if (!files || files.length === 0) {
+                return null;
+            }
+            
+            // Check files from newest to oldest
+            const oneHourAgo = Date.now() - (60 * 60 * 1000);
+            
+            for (const filename of files) {
+                // Extract timestamp from filename
+                const match = filename.match(/gw\d+-league\d+-(\d+)\.json/);
+                if (match) {
+                    const timestamp = parseInt(match[1]);
                     
-                    if (hoursSinceGenerated > 1) {
-                        return null; // Cache expired
+                    // Check if file is fresh (within 1 hour)
+                    if (timestamp > oneHourAgo) {
+                        // Fetch and return this fresh file
+                        const dataResponse = await fetch(`/out/${filename}`);
+                        if (dataResponse.ok) {
+                            const data = await dataResponse.json();
+                            return data;
+                        }
                     }
                 }
-                
-                return data;
             }
+            
+            return null; // No valid cache found
         } catch (error) {
+            console.error('Error checking cache:', error);
+            return null;
         }
-        return null;
     }
 
     /**
