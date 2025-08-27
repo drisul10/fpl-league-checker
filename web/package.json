@@ -4,9 +4,10 @@
   "description": "A responsive web application to check Fantasy Premier League teams for Arsenal player compliance.",
   "main": "app.js",
   "scripts": {
-    "start": "node proxy-server.js",
-    "dev": "NODE_ENV=development node proxy-server.js",
-    "prod": "NODE_ENV=production node proxy-server.js",
+    "build": "node build-version.js",
+    "start": "npm run build && node proxy-server.js",
+    "dev": "npm run build && NODE_ENV=development node proxy-server.js",
+    "prod": "npm run build && NODE_ENV=production node proxy-server.js",
     "build:static": "node scripts/build-static.js",
     "audit": "lighthouse http://localhost:3001 --output json --output html --output-path ./reports/audit",
     "test": "echo \"Error: no test specified\" && exit 1"

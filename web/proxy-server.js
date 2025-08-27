@@ -100,12 +100,24 @@ app.use('/api/', apiLimiter);
 app.use('/api/', speedLimiter);
 
 app.use(express.static('.', {
-    etag: false,
-    maxAge: 0,
-    setHeaders: (res, path) => {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
+    etag: true,
+    setHeaders: (res, path, stat) => {
+        const isVersioned = /\?v=/.test(res.req.url);
+        
+        if (path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i)) {
+            if (isVersioned) {
+                // Versioned assets - cache for 1 year
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            } else {
+                // Non-versioned assets - short cache with revalidation
+                res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate'); // 5 minutes
+            }
+        } else {
+            // HTML files and other content - never cache
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
     }
 }));
 
