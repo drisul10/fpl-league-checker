@@ -141,21 +141,51 @@ app.get('/api/cache-files', (req, res) => {
             return res.json([]);
         }
         
-        const files = fs.readdirSync(outDir)
-            .filter(f => regex.test(f))
+        // Force fresh directory read by clearing any potential caching
+        let files;
+        try {
+            // Read directory with fresh file system state
+            files = fs.readdirSync(outDir, { withFileTypes: false });
+        } catch (dirError) {
+            if (LOGGING.enableErrorLogging && !isProduction) {
+                console.error('Error reading directory:', dirError);
+            }
+            return res.json([]);
+        }
+        
+        const matchedFiles = files
+            .filter(f => {
+                // Additional check: verify file actually exists and is readable
+                const filePath = path.join(outDir, f);
+                try {
+                    const stats = fs.statSync(filePath);
+                    return stats.isFile() && stats.size > 0 && regex.test(f);
+                } catch (statError) {
+                    // File might be being written, skip it
+                    return false;
+                }
+            })
             .map(f => {
                 // Extract timestamp from filename
                 const match = f.match(/gw\d+-league\d+-(\d+)\.json/);
+                const timestamp = match ? parseInt(match[1]) : 0;
                 return {
                     filename: f,
-                    timestamp: match ? parseInt(match[1]) : 0
+                    timestamp: timestamp,
+                    // Add file info for debugging
+                    size: fs.statSync(path.join(outDir, f)).size
                 };
             })
             .sort((a, b) => b.timestamp - a.timestamp) // Sort by timestamp, newest first
             .slice(0, 10) // Return max 10 most recent
             .map(f => f.filename);
             
-        res.json(files);
+        // Add cache-busting headers to prevent caching of this response
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
+        res.json(matchedFiles);
     } catch (error) {
         if (LOGGING.enableErrorLogging && !isProduction) {
             console.error('Error listing cache files:', error);

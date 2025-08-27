@@ -860,12 +860,12 @@ class FPLAnalyzer {
                         const maxAttempts = 30; // 30 seconds max wait
                         
                         while (attempts < maxAttempts && !cachedData) {
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds instead of 1
                             cachedData = await this.checkForCachedData(config.league.id, config.league.gameweek);
                             attempts++;
                             
-                            if (!cachedData && attempts % 5 === 0) {
-                                this.ui.updateProgress(10 + attempts, `Still generating... (${attempts}s)`);
+                            if (!cachedData && attempts % 3 === 0) { // Update progress every 6 seconds
+                                this.ui.updateProgress(10 + (attempts * 2), `Still generating... (${attempts * 2}s)`);
                             }
                         }
                     }
