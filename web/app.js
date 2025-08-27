@@ -307,6 +307,14 @@ class FPLAnalyzer {
             const pattern = `gw${gameweek}-league${leagueId}-*`;
             const response = await fetch(`/api/cache-files?pattern=${encodeURIComponent(pattern)}`);
             
+            // Handle rate limiting
+            if (response.status === 429) {
+                // For cache-files, we can silently return null and let the caller handle it
+                // since this is called during polling and shouldn't interrupt the flow
+                console.warn('Rate limited while checking cache files');
+                return null;
+            }
+            
             if (!response.ok) {
                 return null;
             }
@@ -880,6 +888,19 @@ class FPLAnalyzer {
                                     gameweek: config.league.gameweek 
                                 })
                             });
+                            
+                            // Handle rate limiting specifically
+                            if (response.status === 429) {
+                                const errorData = await response.json().catch(() => ({ error: 'Too many requests' }));
+                                this.ui.showError(`Too many requests - please wait 2 minutes before trying again. ${errorData.error || ''}`);
+                                return null;
+                            }
+                            
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({ error: 'Server error' }));
+                                throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
+                            }
+                            
                             const result = await response.json();
                             generationTriggered = true;
                             
@@ -888,6 +909,10 @@ class FPLAnalyzer {
                             }
                         } catch (error) {
                             console.error('Failed to trigger generation:', error);
+                            // Don't continue polling if generation failed to start due to rate limiting
+                            if (error.message.includes('429') || error.message.includes('Too many requests')) {
+                                return null;
+                            }
                         }
                     } else {
                         // Generation already triggered, just waiting
@@ -1072,8 +1097,15 @@ class FPLAnalyzer {
             
             this.ui.updateProgress(50, 'Running analysis...');
             
+            // Handle rate limiting for export
+            if (response.status === 429) {
+                const errorData = await response.json().catch(() => ({ error: 'Too many requests' }));
+                throw new Error(`Too many requests - please wait 2 minutes before trying again. ${errorData.error || ''}`);
+            }
+            
             if (!response.ok) {
-                throw new Error(`Export failed: ${response.statusText}`);
+                const errorData = await response.json().catch(() => ({ error: 'Export failed' }));
+                throw new Error(`Export failed: ${errorData.error || response.statusText}`);
             }
             
             const result = await response.json();
