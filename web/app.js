@@ -630,7 +630,7 @@ class FPLAnalyzer {
         
         this.dataUpdatedAt = `Fetched ${new Date().toLocaleString()} local time`;
         
-        if (!this.currentGameweek && data.events) {
+        if (data.events) {
             const currentEvent = data.events.find(event => event.is_current);
             if (currentEvent) {
                 this.currentGameweek = currentEvent.id;
